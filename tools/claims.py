@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+"""Claims view: every prose paragraph of a chapter with the facts it cites, side by side.
+
+Usage: python3 tools/claims.py <chapter.md> [--facts F] [--sources S] [--uncited-only]
+
+Prints each paragraph (front matter, code and dot blocks skipped) with its line range, then
+under it every cited fact: its verbatim quote, which is the evidence, then the scout's one-line
+summary, which is not. It also flags paragraphs that make no citation, and citations that
+point at missing facts. Built for the
+claim checker, so it can judge each paragraph against its evidence without cross-referencing
+facts.jsonl by hand. Fact and source paths resolve like tools/render.py: facts.jsonl next to
+the chapter, sources.jsonl next to it or two directories up.
+"""
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+
+CITE_RX = re.compile(r"\[(@[^\]]+)\]")
+ID_RX = re.compile(r"@([A-Za-z][\w-]*)")
+FENCE_RX = re.compile(r"^\s*(`{3,}|~{3,})")
+
+
+def load_jsonl(path):
+    out = {}
+    if not path.exists():
+        return out
+    for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip():
+            continue
+        try:
+            rec = json.loads(line)
+        except json.JSONDecodeError as e:
+            sys.exit(f"claims.py: {path}:{n}: invalid JSON ({e.msg})")
+        if "id" in rec:
+            out[rec["id"]] = rec
+    return out
+
+
+def paragraphs(lines):
+    """Yield (start, end, text, kind) for prose blocks, 1-based inclusive line numbers."""
+    i, n = 0, len(lines)
+    if n and lines[0].strip() == "---":
+        i = 1
+        while i < n and lines[i].strip() not in ("---", "..."):
+            i += 1
+        i += 1
+    buf, start, comment = [], None, False
+    while i < n:
+        line = lines[i]
+        fence = FENCE_RX.match(line)
+        if fence:
+            if buf:
+                yield start, i, "\n".join(buf), "prose"
+                buf = []
+            marker, info, s = fence.group(1), line.strip()[len(fence.group(1)):], i + 1
+            i += 1
+            while i < n and not lines[i].strip().startswith(marker):
+                i += 1
+            inc = re.search(r'include="([^"]+)"', info)
+            if inc:
+                yield s, i + 1, f"[code block including {inc.group(1)}]", "code"
+            i += 1
+            continue
+        stripped = line.strip()
+        if "<!--" in stripped:
+            comment = "-->" not in stripped.split("<!--", 1)[1]
+            i += 1
+            continue
+        if comment:
+            comment = "-->" not in stripped
+            i += 1
+            continue
+        if not stripped or stripped.startswith(":::") or stripped.startswith("#"):
+            if buf:
+                yield start, i, "\n".join(buf), "prose"
+                buf = []
+            if stripped.startswith("#"):
+                yield i + 1, i + 1, stripped, "heading"
+            elif stripped.startswith(":::") and stripped != ":::":
+                yield i + 1, i + 1, stripped, "div"
+            i += 1
+            continue
+        if not buf:
+            start = i + 1
+        buf.append(line)
+        i += 1
+    if buf:
+        yield start, n, "\n".join(buf), "prose"
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("chapter")
+    ap.add_argument("--facts")
+    ap.add_argument("--sources")
+    ap.add_argument("--uncited-only", action="store_true",
+                    help="show only prose paragraphs without any citation")
+    args = ap.parse_args()
+    chap = Path(args.chapter)
+    if not chap.is_file():
+        sys.exit(f"claims.py: no such chapter file: {chap}")
+    facts_path = Path(args.facts) if args.facts else chap.parent / "facts.jsonl"
+    if args.sources:
+        src_path = Path(args.sources)
+    else:
+        src_path = chap.parent / "sources.jsonl"
+        if not src_path.exists():
+            src_path = chap.parent.parent.parent / "sources.jsonl"
+    facts, sources = load_jsonl(facts_path), load_jsonl(src_path)
+
+    lines = chap.read_text(encoding="utf-8").splitlines()
+    n_para = n_uncited = n_missing = 0
+    for start, end, text, kind in paragraphs(lines):
+        if kind in ("heading", "div"):
+            if not args.uncited_only:
+                print(f"\n=== {start}: {text}")
+            continue
+        if kind == "code":
+            if not args.uncited_only:
+                print(f"\n[{start}-{end}] {text}")
+            continue
+        n_para += 1
+        ids = [m for c in CITE_RX.findall(text) for m in ID_RX.findall(c)]
+        uncited = not ids
+        n_uncited += uncited
+        if args.uncited_only and not uncited:
+            continue
+        print(f"\n[{start}-{end}]" + ("  (no citation)" if uncited else ""))
+        print(text)
+        seen = []
+        for fid in ids:
+            if fid in seen:
+                continue
+            seen.append(fid)
+            if fid == "unverified":
+                print("    -> [@unverified] marker")
+                continue
+            f = facts.get(fid)
+            if not f:
+                n_missing += 1
+                print(f"    -> {fid}: MISSING from {facts_path}")
+                continue
+            src = sources.get(f.get("source", ""), {})
+            print(f"    -> {fid} [{f.get('source')}, {f.get('locator', '')}]")
+            print(f"       quote (the evidence): \"{f.get('quote', '')}\"")
+            print(f"       scout summary (not evidence): {f.get('claim', '')}")
+            if src:
+                print(f"       source: {src.get('title', '')} ({src.get('version', '')})")
+    print(f"\n--\n{n_para} prose paragraphs, {n_uncited} without citations, "
+          f"{n_missing} citations to missing facts")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,6 @@
+{
+  "runner": "local",
+  "expect": "success",
+  "timeout": 60,
+  "network": false
+}

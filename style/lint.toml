@@ -1,0 +1,140 @@
+# Settings for tools/lint.py. Tune thresholds and lists here; no code changes needed.
+# Word counts are counts of whitespace-separated tokens that contain a letter or digit,
+# measured on prose after code, math, citations and markup are stripped.
+
+# Acronyms that never need an expansion, one per line. Relative to this file.
+acronyms_file = "known-acronyms.txt"
+
+# Per-rule severity: "error", "warning", "info" or "off". Rules not listed use the
+# defaults built into lint.py (style rules are errors unless the brief says otherwise).
+[severity]
+semicolon = "error"
+parentheses = "error"
+short-sentences = "error"
+dashes = "error"
+stock-phrase = "error"
+contrast-frame = "warning"
+rhetorical-question = "warning"
+wall-of-text = "warning"
+list-heavy = "warning"
+exclamation = "warning"
+acronym = "warning"
+term-glossary = "warning"
+unverified = "info"
+facts-missing = "warning"
+word-budget-low = "warning"
+
+[semicolons]
+# Semicolons allowed per 1000 prose words, for the whole chapter. Every semicolon past the
+# allowance, in reading order, is a finding.
+per_1000_words = 1.0
+
+[parentheses]
+# More parentheticals than this in one paragraph is a finding.
+max_per_paragraph = 1
+# A parenthetical with more words than this is a finding.
+max_words = 6
+
+[short_sentences]
+# A sentence with fewer words than this is short.
+under_words = 8
+# This many short sentences in a row is a finding.
+min_run = 3
+
+[dashes]
+# Em dashes, spaced en dashes and spaced -- / --- allowed per 1000 prose words.
+per_1000_words = 2.0
+# A paragraph with at least this many dashes is always a finding.
+paragraph_max = 2
+
+[wall_of_text]
+max_words = 170
+
+[list_heavy]
+# More consecutive list items than this is a finding.
+max_items = 8
+exempt_divs = ["selftest", "answers"]
+
+[rhetorical_question]
+# "Why? Because ..." / "The result? Chaos." : a question this short, or a question
+# followed by a sentence this short, is a finding.
+max_question_words = 2
+max_fragment_words = 4
+
+[code]
+sketch_max_lines = 12
+# Lines shown by one include= block of code, and by one .output block.
+include_max_lines = 25
+output_max_lines = 20
+# Total lines of included code across the chapter (warning).
+total_max_lines = 90
+
+[budget]
+# Error when prose words exceed max * over_factor, warning below min * under_factor.
+over_factor = 1.1
+under_factor = 0.8
+
+[divs]
+known = ["crux", "aside", "misconception", "tryit", "selftest", "answers"]
+
+[stock_phrases]
+# Case-insensitive. Plain entries match as whole words or phrases; straight and curly
+# apostrophes are interchangeable. Entries starting with "re:" are Python regular
+# expressions (case-insensitive).
+phrases = [
+  "delve", "delves", "delved", "delving",
+  "it's worth noting", "it is worth noting",
+  "it's important to note", "it is important to note",
+  "let's dive", "dive in", "dive into", "diving into",
+  "buckle up",
+  "game-changer", "game changer", "game-changing",
+  "in today's",
+  "tapestry",
+  "testament to",
+  "the magic happens",
+  "here's the thing",
+  "here's where it gets",
+  "the key insight",
+  "at its core",
+  "in essence",
+  "simply put",
+  "in a nutshell",
+  "crucially",
+  # Bare "unlock" is ordinary vocabulary in chapters about locks, so only the slogan use.
+  "re:\\bunlock(?:s|ed|ing)?\\s+(?:(?:the|its|your|their|a)\\s+)?(?:full\\s+|true\\s+|hidden\\s+)?(?:power|potential|secrets?|possibilit(?:y|ies)|magic)\\b",
+  "unleash", "unleashes", "unleashing",
+  "supercharge", "supercharges", "supercharged",
+  "seamless", "seamlessly",
+  "navigate the complexities",
+  "landscape of",
+  "journey",
+  "fascinating",
+  "powerful tool",
+  "let's explore",
+  "let's take a look",
+  "we'll explore",
+  "in this chapter we will", "in this chapter, we will",
+  "without further ado",
+  "plot twist",
+  "spoiler",
+  "the beauty of",
+  "elegant solution",
+  "think of it like this",
+  "imagine a world",
+  "picture this:",
+  "and that's it",
+  "that's the point",
+  "rest assured",
+]
+
+[contrast_frames]
+# Python regular expressions, case-insensitive, matched against each paragraph's prose
+# (apostrophes normalised to '). Each match is a "contrast frame" finding.
+patterns = [
+  # "isn't just X, it's Y", "is not about X, it's about Y", "It's not X, it's Y"
+  "\\b(?:(?:is|are|was|were)n't|(?:is|are|was|were)\\s+not|'s\\s+not|'re\\s+not)\\s+[^.!?;]{1,80}?[,;:\u2014\u2013]\\s*(?:it|they|this|that|he|she)(?:'s|'re|\\s+is|\\s+are|\\s+was|\\s+were)\\b(?!\\s*,)",
+  # "not just X but Y", "not only X but also Y"
+  "\\bnot\\s+(?:just|only|merely|simply)\\b[^.!?]{1,100}?\\bbut\\b",
+  # "It's not X. It's Y."
+  "(?:^|(?<=[.!?]\\s))(?:it|this|that|they)(?:'s\\s+not|'re\\s+not|\\s+is\\s+not|\\s+are\\s+not|\\s+was\\s+not|\\s+isn't|\\s+aren't|\\s+wasn't)\\s+[^.!?]{1,60}[.!]\\s+(?:it|this|that|they)(?:'s|'re|\\s+is|\\s+are|\\s+was)\\b",
+]

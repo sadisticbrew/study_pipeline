@@ -1,0 +1,29 @@
+{"term": "replication", "def": "Keeping identical copies of some state on several machines so that the loss of one machine does not lose the state.", "chapter": 1}
+{"term": "replicated state machine", "def": "A design where identical deterministic state machines on several servers process the same commands in the same order, so they compute identical copies of the same state.", "chapter": 1}
+{"term": "leader", "def": "The one server in a cluster that is currently in charge of deciding the order of operations.", "chapter": 1}
+{"term": "consensus", "def": "The problem of getting a set of servers to agree on a single value, or a single sequence of values, despite failures and an unreliable network.", "chapter": 1}
+{"term": "fault model", "def": "The explicit list of failures a protocol is designed to tolerate, and the failures it assumes never happen.", "chapter": 1}
+{"term": "partition", "def": "A network failure that splits the servers into groups that can talk within the group but not across groups.", "chapter": 1}
+{"term": "crash-recovery", "def": "A fault model where servers fail by stopping and may later restart, reloading their saved state and rejoining the system.", "chapter": 1}
+{"term": "byzantine", "def": "A fault model where failed servers may behave arbitrarily, including sending false or contradictory information.", "chapter": 1}
+{"term": "followers", "def": "The servers in a cluster that accept the leader's decisions and replicate its state.", "chapter": 1}
+{"term": "heartbeats", "def": "Small periodic messages a leader sends to followers to signal that it is still alive and in charge.", "chapter": 1}
+{"term": "split brain", "def": "A failure state in which two servers in one cluster simultaneously believe they are the leader.", "chapter": 1}
+{"term": "fencing", "def": "Invalidating a stale leader's actions by attaching a number or timestamp to every decision and rejecting decisions that carry a stale one.", "chapter": 1}
+{"term": "FLP impossibility result", "def": "The 1985 proof that in a fully asynchronous system, no deterministic consensus protocol can guarantee that it terminates if even one server may crash.", "chapter": 1}
+{"term": "partial synchrony", "def": "A system model that assumes timing is not fully arbitrary, only that message delays and processing times eventually stay within some loose bound.", "chapter": 1}
+{"term": "mean time between failures", "def": "The average time a machine or system runs before its next failure.", "chapter": 1}
+{"term": "majority", "def": "More than half of the servers in a cluster.", "chapter": 1}
+{"term": "quorum", "def": "The minimum number of servers that must agree for a cluster decision to count.", "chapter": 1}
+{"term": "quorum intersection", "def": "The property that any two majorities of a cluster must share at least one common server.", "chapter": 1}
+{"term": "volatile state", "def": "State kept only in memory, such as the commit index and last applied index, which is lost when the process exits and reconstructed on restart.", "chapter": 2}
+{"term": "durable state", "def": "State stored on some medium that survives a process crash and reboot.", "chapter": 2}
+{"term": "stable storage", "def": "Storage that survives crashes, typically a local disk with appropriate sync operations, though the Raft paper deliberately abstracts over the exact mechanism.", "chapter": 2}
+{"term": "persisted state", "def": "Durable state that the protocol explicitly writes so it can be reloaded after a restart.", "chapter": 2}
+{"term": "fsync", "def": "A system call that forces all modified data and metadata for a file out to the underlying storage device, establishing an ordering boundary.", "chapter": 2}
+{"term": "write-ahead log (WAL)", "def": "An append-only sequence of records describing operations that must be applied to the state machine; the source of truth from which the state machine is rebuilt.", "chapter": 2}
+{"term": "page cache", "def": "The kernel's in-memory cache of file contents; writes normally go here first and are flushed to disk later.", "chapter": 2}
+{"term": "disk write cache", "def": "Volatile memory on the disk controller or drive itself that can buffer writes and lose them if power fails before the cache is flushed.", "chapter": 2}
+{"term": "fdatasync", "def": "Like fsync, but forces only data and a subset of metadata, omitting metadata not required for later reads of the file contents.", "chapter": 2}
+{"term": "replays", "def": "The act of reading a log after a crash and reapplying its entries to rebuild state.", "chapter": 2}
+{"term": "idempotent", "def": "An operation that produces the same result no matter how many times it is applied, so replaying it is safe.", "chapter": 2}

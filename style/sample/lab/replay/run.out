@@ -1,0 +1,9 @@
+seed 1: crashed after 3 of 12 ops
+  recovered {'k0': 0, 'k1': 1, 'k2': 2}
+  matches the first 3 ops: True
+seed 2: crashed after 1 of 12 ops
+  recovered {'k0': 0}
+  matches the first 1 ops: True
+seed 3: crashed after 4 of 12 ops
+  recovered {'k0': 0, 'k1': 1, 'k2': 2, 'k3': 3}
+  matches the first 4 ops: True

@@ -1,0 +1,3 @@
+{"id": "S1", "title": "Atomic Commit In SQLite", "url": "https://www.sqlite.org/atomiccommit.html", "kind": "docs", "version": "page updated 2026-04-21", "why": "Primary account of SQLite's crash-safety assumptions about disks."}
+{"id": "S2", "title": "PostgreSQL 18 Documentation, 28.3 Write-Ahead Logging (WAL)", "url": "https://www.postgresql.org/docs/18/wal-intro.html", "kind": "docs", "version": "PostgreSQL 18", "why": "Short official statement of the WAL rule and its performance argument."}
+{"id": "S3", "title": "fsync(2), Linux man-pages", "url": "https://man7.org/linux/man-pages/man2/fsync.2.html", "kind": "man", "version": "", "why": "What fsync actually promises."}

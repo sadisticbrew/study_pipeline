@@ -1,0 +1,289 @@
+{
+  "slug": "raft",
+  "title": "Raft consensus",
+  "created": "2026-10-11",
+  "goal": "By the end, you can implement Raft in Go from the paper and defend every rule in it: run elections, replicate and repair a log, explain the commit subtlety behind the paper's figure 8 and the single-server membership-change bug, take and restore snapshots, and serve linearizable and lease reads. You can also read production Raft code like etcd's raft package without drowning, know how practitioners test implementations with simulated partitions and fault injection, and reason about the performance and operations trade-offs real systems make on top of Raft.",
+  "lab": {
+    "runner": "local",
+    "toolchains": [
+      "go"
+    ],
+    "notes": "Labs are small Go programs that simulate a Raft cluster inside one process: nodes as goroutines, a fake network that can delay, reorder and drop messages, and a disk as an in-memory or temp-dir file so fsync ordering can be exercised for real."
+  },
+  "parts": [
+    {
+      "title": "Why agreeing is hard",
+      "chapters": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "title": "The Raft log",
+      "chapters": [
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "title": "Safety and membership",
+      "chapters": [
+        7,
+        8
+      ]
+    },
+    {
+      "title": "Running Raft for real",
+      "chapters": [
+        9,
+        10,
+        11
+      ]
+    }
+  ],
+  "chapters": [
+    {
+      "n": 1,
+      "slug": "why-consensus",
+      "title": "Why agreeing is hard",
+      "part": 0,
+      "core_ideas": [
+        "Replicated state machines: agree on one order of operations instead of every value",
+        "The crash-recovery fault model: lost and delayed messages, paused or rebooted servers, but no lying",
+        "Split brain in naive leader failover, and why fencing by wall clock fails",
+        "FLP in one paragraph: why Raft gives up guaranteed liveness and assumes partial synchrony",
+        "Majorities and quorum intersection as a counting trick"
+      ],
+      "prereqs": [
+        "Comfortable writing Go programs, and the idea of programs talking over a network. No distributed-systems background is assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "done",
+      "quiz": null
+    },
+    {
+      "n": 2,
+      "slug": "what-survives-a-crash",
+      "title": "What survives a crash",
+      "part": 0,
+      "core_ideas": [
+        "Volatile versus durable state, and the three fields Raft must persist",
+        "The write-ahead log as a record you can replay after a reboot",
+        "fsync and the disk write cache: why write order, not write timing, decides correctness",
+        "Replaying a log on restart, and why replayed operations must be safe to repeat"
+      ],
+      "prereqs": [
+        "Chapter 1, and comfort with files and processes from building your container runtime. This chapter assumes no solid Linux-internals background and builds the durability ideas from scratch."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "done",
+      "quiz": null
+    },
+    {
+      "n": 3,
+      "slug": "leader-election",
+      "title": "Terms, votes, and one leader at a time",
+      "part": 0,
+      "core_ideas": [
+        "Terms as a logical clock that makes stale leaders detectable",
+        "Randomized election timeouts and how they break split votes",
+        "Voting rules: one vote per term, majority to win, higher term always wins",
+        "The timing requirement broadcastTime << electionTimeout << MTBF",
+        "What a new leader must do before it knows the log: commit the no-op"
+      ],
+      "prereqs": [
+        "Chapters 1 and 2, including why persisted terms survive reboots."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 4,
+      "slug": "log-replication",
+      "title": "One log, replicated",
+      "part": 1,
+      "core_ideas": [
+        "AppendEntries and the term and prevLogIndex/prevLogTerm consistency check",
+        "The log matching property and why induction makes it hold",
+        "commitIndex: a leader counts replicas, followers trust the leader's commitIndex",
+        "Applying entries to the state machine only after they are committed",
+        "Heartbeats as empty AppendEntries"
+      ],
+      "prereqs": [
+        "Chapter 3, including how a leader learns its term and log."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 5,
+      "slug": "log-repair",
+      "title": "Repairing diverged logs",
+      "part": 1,
+      "core_ideas": [
+        "How follower logs diverge: gaps, uncommitted tails, and stale leaders",
+        "Walking nextIndex backward until the conflict is found",
+        "Forcing the follower to delete uncommitted suffixes",
+        "matchIndex and how the leader tracks each follower",
+        "The fast-backup optimization: sending enough terms to jump back in one round trip"
+      ],
+      "prereqs": [
+        "Chapter 4, including the AppendEntries check and the log matching property."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 6,
+      "slug": "commit-rules",
+      "title": "What committed really means",
+      "part": 1,
+      "core_ideas": [
+        "Two senses of committed, and why counting replicas is only safe for current-term entries",
+        "The paper's figure 8 scenario, traced step by step",
+        "Why a leader of term T may not decide commitment for term T' < T by counting replicas",
+        "The currentTerm check on AppendEntries, and leaders committing old entries indirectly",
+        "Where implementations got this wrong, from the Students' Guide and Raft Refloated"
+      ],
+      "prereqs": [
+        "Chapters 4 and 5, including how entries move and how followers check terms."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 7,
+      "slug": "safety-proof",
+      "title": "Why the safety argument holds",
+      "part": 2,
+      "core_ideas": [
+        "The election restriction: voting only for up-to-date logs",
+        "Leader completeness via the voting diagram argument: why a majority must hold any committed entry",
+        "State machine safety by induction over terms",
+        "The TLA+ spec as an executable version of the same argument",
+        "Where the informal proof is subtle: the ~90 invariants a machine-checked proof needed"
+      ],
+      "prereqs": [
+        "Chapters 3 and 6, including the figure 8 scenario and why only current-term entries count."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 8,
+      "slug": "membership-changes",
+      "title": "Changing the cluster while it runs",
+      "part": 2,
+      "core_ideas": [
+        "Why switching configuration one node at a time can split the cluster into two majorities",
+        "Joint consensus: two configuration entries, one leader for both",
+        "Single-server changes as the practical default and why they avoid the two-majority problem",
+        "The 2015 single-server-change bug and the fix: a leader appends config entries only after committing a current-term entry",
+        "Removed servers disrupting elections, and pre-vote as the mitigation"
+      ],
+      "prereqs": [
+        "Chapter 7, including why majorities intersect and what the election restriction guarantees."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 9,
+      "slug": "clients-and-reads",
+      "title": "Clients, sessions, and reads",
+      "part": 3,
+      "core_ideas": [
+        "Linearizability from the client's point of view, and why reads are not free",
+        "ReadIndex reads: going through the leader's committed position without the log",
+        "Lease reads and the clock assumptions they add",
+        "Client sessions and duplicate detection: exactly-once semantics on at-least-once retries",
+        "Stale follower reads and where they are acceptable"
+      ],
+      "prereqs": [
+        "Chapters 4 and 6, including commitIndex and what a committed entry guarantees."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 10,
+      "slug": "snapshots",
+      "title": "Snapshots and forgetting the log",
+      "part": 3,
+      "core_ideas": [
+        "Why the log cannot grow forever, and what compaction throws away",
+        "What a snapshot contains: state machine state plus lastApplied and metadata",
+        "InstallSnapshot and the slow follower that has nothing left to catch up from",
+        "The paper's rule that a receiver discards its log on snapshot, and the bug real implementations made here",
+        "How snapshotting interacts with commit, replay, and restart"
+      ],
+      "prereqs": [
+        "Chapters 2, 4 and 5, including replay-on-restart and log repair."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 11,
+      "slug": "raft-in-production",
+      "title": "Raft in the real world",
+      "part": 3,
+      "core_ideas": [
+        "How etcd's raft package is factored: the Ready loop, the Storage interface, transport and state machine left to the caller",
+        "Testing with simulated time: deterministic simulation and partition fault injection (Jepsen, Antithesis)",
+        "Performance levers: batching, pipelining, and inflight-message limits",
+        "Classic implementation bugs and what they teach about reading the rules precisely",
+        "How practitioners reason about Raft operations: quorum management, learners, and reconfiguration safety in etcd"
+      ],
+      "prereqs": [
+        "Chapters 4 through 10, since this chapter shows the whole machine as one library."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    }
+  ]
+}

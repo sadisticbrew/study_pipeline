@@ -1,0 +1,8 @@
+== Phase 1: A leader, client writes web-1 cpu=2 ==
+== Phase 2: partition A from B,C; B times out and becomes leader ==
+[B] timeout: promoting self to leader
+== Phase 3: new client writes web-1 cpu=4 to leader B ==
+== Result: each node's view ==
+node A: leader, registry map[web-1:{cpu:2}]
+node B: leader, registry map[web-1:{cpu:4}]
+node C: follower, registry map[web-1:{cpu:4}]

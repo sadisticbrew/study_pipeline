@@ -1,0 +1,9 @@
+# Study pipeline model routing. Agents in .omp/agents/ refer to these roles.
+# /bakeoff pick updates sp_writer, and sp_checker when it would share a family with the writer.
+# Thinking is low for the writer and scouts on purpose. At high, the writer spent about 13
+# minutes drafting the chapter in hidden reasoning before writing a word. The brief is the plan.
+modelRoles:
+  sp_writer: opencode-go/glm-5.2:low
+  sp_checker: opencode-go/deepseek-v4-pro:high
+  sp_scout: opencode-go/deepseek-v4.1-flash:low
+  sp_lab: opencode-go/kimi-k2.7-code:high

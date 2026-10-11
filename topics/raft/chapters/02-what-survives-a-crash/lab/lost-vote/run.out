@@ -1,0 +1,8 @@
+term 2: received RequestVote from A
+granted vote to A in term 2
+CRASH
+RESTART with empty memory
+term 2: received RequestVote from B
+granted vote to B in term 2
+SAFETY VIOLATION: voted for both A and B in term 2
+exit status 1

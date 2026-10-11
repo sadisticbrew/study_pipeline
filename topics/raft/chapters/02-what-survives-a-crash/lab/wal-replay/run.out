@@ -1,0 +1,9 @@
+WAL entry: {"op":"set","key":"web-1","value":"10.0.0.7"}
+applied: web-1 -> 10.0.0.7
+state before crash: map[web-1:10.0.0.7]
+CRASH (lost in-memory map)
+RESTART
+replaying WAL
+replay: set web-1 10.0.0.7
+applied: web-1 -> 10.0.0.7
+state after replay: map[web-1:10.0.0.7]

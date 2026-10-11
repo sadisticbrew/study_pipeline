@@ -1,0 +1,8 @@
+term 2: received RequestVote from A
+persisted state: term=2 votedFor=A
+granted vote to A in term 2
+CRASH
+RESTART, loading persisted state
+loaded state: term=2 votedFor=A
+term 2: received RequestVote from B
+refused vote to B in term 2 (already voted for A)
