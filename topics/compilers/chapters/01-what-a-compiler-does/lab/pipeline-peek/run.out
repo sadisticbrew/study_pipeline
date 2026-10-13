@@ -1,0 +1,18 @@
+clang --target=x86_64-linux-gnu -S -emit-llvm -O1 -fno-discard-value-names f.c -o f.ll
+f.ll: removed target layout/triple and CPU attributes once (scalar i32 example)
+--- f.ll: function body ---
+define dso_local range(i32 -2147483648, 2147483642) i32 @f(i32 noundef %x) local_unnamed_addr #0 {
+entry:
+  %0 = mul i32 %x, 3
+  %sub = add i32 %0, 9
+  ret i32 %sub
+}
+--- llc -mtriple=x86_64-linux-gnu -asm-verbose=false f.ll -o f.s ---
+f:
+	leal	9(%rdi,%rdi,2), %eax
+	retq
+--- llc -mtriple=aarch64-linux-gnu -asm-verbose=false f.ll -o f.s ---
+f:
+	add	w8, w0, w0, lsl #1
+	add	w0, w8, #9
+	ret

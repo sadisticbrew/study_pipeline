@@ -5,10 +5,12 @@ Usage:
   tools/render.py <chapter.md> [--theme light|dark|both] [--out-dir DIR]
                   [--facts F] [--sources S] [--topic-dir T] [--base-dir D] [--png]
 
-Writes <stem>.pdf (light) and <stem>-dark.pdf (dark) into --out-dir (default:
-the chapter's directory); chapter.md gives chapter.pdf / chapter-dark.pdf.
+Writes <name>.pdf (light) and <name>-dark.pdf (dark) into --out-dir (default:
+the chapter's directory). For chapter.md, <name> is chapter<N>, with N taken from
+the front matter `chapter:` (chapter.md with `chapter: 2` gives chapter2.pdf /
+chapter2-dark.pdf); any other file keeps its stem, so draft.md gives draft.pdf.
 Intermediate files (.typ, diagrams, PNGs) go to <out-dir>/.build/<stem>/.
---png also writes page PNGs there: png/<stem>-light-NN.png, png/<stem>-dark-NN.png.
+--png also writes page PNGs there: png/<name>-light-NN.png, png/<name>-dark-NN.png.
 
 Defaults: facts from <chapter dir>/facts.jsonl; sources from
 <chapter dir>/sources.jsonl if present, else <topic dir>/sources.jsonl, where
@@ -80,6 +82,23 @@ def run(cmd, what):
         raise RenderError(f"{what} not found on PATH ({cmd[0]})")
 
 
+def output_name(chapter):
+    """chapter<N> for chapter.md, from its front matter `chapter:`; else the file stem."""
+    if chapter.stem != "chapter":
+        return chapter.stem
+    lines = chapter.read_text(encoding="utf-8").splitlines()
+    if lines and lines[0].strip() == "---":
+        for line in lines[1:]:
+            if line.strip() == "---":
+                break
+            key, _, value = line.partition(":")
+            if key.strip() == "chapter" and value.strip().isdigit():
+                return f"chapter{int(value.strip())}"
+    raise RenderError(
+        f"{chapter}: front matter needs an integer `chapter:` to name the PDF chapter<N>.pdf"
+    )
+
+
 def main():
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -99,6 +118,7 @@ def main():
         raise RenderError(f"chapter file not found: {a.chapter}")
     cdir = chapter.parent
     stem = chapter.stem
+    name = output_name(chapter)
     out_dir = (a.out_dir or cdir).resolve()
     base_dir = (a.base_dir or cdir).resolve()
     facts_path = (a.facts or cdir / "facts.jsonl").resolve()
@@ -174,13 +194,13 @@ def main():
     themes = ["light", "dark"] if a.theme == "both" else [a.theme]
     out_dir.mkdir(parents=True, exist_ok=True)
     for theme in themes:
-        pdf = out_dir / (f"{stem}.pdf" if theme == "light" else f"{stem}-{theme}.pdf")
+        pdf = out_dir / (f"{name}.pdf" if theme == "light" else f"{name}-{theme}.pdf")
         targets = [(pdf, [])]
         if a.png:
             png_dir = build / "png"
             png_dir.mkdir(exist_ok=True)
             targets.append(
-                (png_dir / f"{stem}-{theme}-{{0p}}.png", ["--format", "png", "--ppi", "110"])
+                (png_dir / f"{name}-{theme}-{{0p}}.png", ["--format", "png", "--ppi", "110"])
             )
         for target, extra in targets:
             p = run(

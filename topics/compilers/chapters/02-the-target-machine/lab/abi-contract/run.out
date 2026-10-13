@@ -1,0 +1,36 @@
+=== gcc version ===
+gcc (GCC) 16.2.1 20260810
+=== correct sum3: assembly source ===
+.text
+.globl sum3
+.type sum3, @function
+sum3:
+    pushq %rbx                 # Save the caller's value; align rsp before call.
+    movq %rdi, %rbx
+    addq %rsi, %rbx
+    addq %rdx, %rbx
+    movq %rbx, %rdi
+    call echo
+    popq %rbx
+    ret
+.size sum3, .-sum3
+.section .note.GNU-stack,"",@progbits
+=== caller: live rbx across sum3 (hand-written, not gcc-selected) ===
+    movq %rdi, %r12            # Keep the output pointer across the call.
+    movq $1000, %rbx           # A live caller value in a callee-saved register.
+    movq $10, %rdi
+    movq $20, %rsi
+    movq $30, %rdx
+    call sum3
+    movq %rbx, (%r12)          # Observe the live value after the call.
+=== callee-saved register variants ===
+correct: sum3(10,20,30) = 60; caller rbx: 1000 -> 1000; exit=0
+clobber: sum3(10,20,30) = 60; caller rbx: 1000 -> 60; exit=0
+=== vector_local: gcc -O2 instructions at aligned store ===
+subq	$40, %rsp
+movlhps	%xmm1, %xmm0
+movaps	%xmm0, (%rsp)
+call	read_lanes@PLT
+=== stack alignment variants ===
+aligned: sum3(10,20,30) = 60; exit=0
+misaligned: stdout=''; signal=SIGSEGV (returncode=-11); attempts=5/5

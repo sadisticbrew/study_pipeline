@@ -1,0 +1,26 @@
+exprc '(7 + 5) * 3 - 6': exit=0
+files after exprc: example.s
+--- example.s ---
+.text
+.globl compute
+compute:
+  movabsq $7, %rax; pushq %rax
+  movabsq $5, %rax; pushq %rax
+  popq %rcx; popq %rax
+  addq %rcx, %rax; pushq %rax
+  movabsq $3, %rax; pushq %rax
+  popq %rcx; popq %rax
+  imulq %rcx, %rax; pushq %rax
+  movabsq $6, %rax; pushq %rax
+  popq %rcx; popq %rax
+  subq %rcx, %rax; pushq %rax
+  popq %rax
+  ret
+.section .note.GNU-stack,"",@progbits
+gcc -c example.s -o example.o; gcc driver.c example.o -o example
+files after gcc: example, example.o, example.s
+example: stdout='30'
+example: exit=0
+exprc '10 / (5 - 5)': exit=0
+division: stdout=''
+division: signal=SIGFPE (returncode=-8)

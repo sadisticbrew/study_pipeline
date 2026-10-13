@@ -1,0 +1,43 @@
+{"term": "interpreter", "def": "A program that takes a program as input and produces the result of executing it.", "chapter": 1}
+{"term": "compiler", "def": "A program that translates a program written in one language into an equivalent program in another language.", "chapter": 1}
+{"term": "source language", "def": "The language a compiler reads its input program in.", "chapter": 1}
+{"term": "target language", "def": "The language a compiler writes its output program in.", "chapter": 1}
+{"term": "ahead-of-time compilation", "def": "Translating code before it runs, commonly to machine code.", "chapter": 1}
+{"term": "bytecode", "def": "A compact instruction set for a software execution environment, which may interpret it or compile it to machine code.", "chapter": 1}
+{"term": "virtual machine", "def": "A software execution environment for an instruction set, which may interpret instructions or compile them to machine code.", "chapter": 1}
+{"term": "just-in-time compilation", "def": "Compiling parts of a program to machine code while the program is running, usually the parts that run most often.", "chapter": 1}
+{"term": "front end", "def": "The part of a compiler that reads source text, checks it, and builds an internal representation of the program.", "chapter": 1}
+{"term": "middle end", "def": "The part of a compiler that improves the program in an internal form, usually largely independent of the source language and target machine.", "chapter": 1}
+{"term": "intermediate representation", "def": "A data structure or language a compiler uses to hold the program between reading the source and writing the target.", "chapter": 1}
+{"term": "back end", "def": "The part of a compiler that turns the intermediate representation into instructions for one particular target machine.", "chapter": 1}
+{"term": "register", "def": "A small, very fast storage slot inside the processor that instructions read and write directly.", "chapter": 1}
+{"term": "assembly language", "def": "A text form of machine instructions that maps almost directly onto the bytes the processor runs.", "chapter": 1}
+{"term": "assembler", "def": "A program that turns assembly language text into machine code.", "chapter": 1}
+{"term": "object file", "def": "A file containing machine code and linking information, not yet combined with the other pieces it needs to run.", "chapter": 1}
+{"term": "linker", "def": "A program that combines object files and libraries into an executable or library, connecting references between them.", "chapter": 1}
+{"term": "compiler driver", "def": "A command that coordinates compilation and linking, and separate assembly when needed, on your behalf.", "chapter": 1}
+{"term": "stack-machine code generation", "def": "Generating code that keeps every intermediate result on a stack, pushing operands and popping them when an operation needs them.", "chapter": 1}
+{"term": "bootstrapping", "def": "Building a compiler using an earlier compiler, so that a language's compiler can eventually be built from itself.", "chapter": 1}
+{"term": "self-hosting compiler", "def": "A compiler written in the same language it compiles.", "chapter": 1}
+{"term": "return address", "def": "The address of the instruction just after a call, saved on the stack so the callee's ret can resume the caller there.", "chapter": 2}
+{"term": "calling convention", "def": "The set of rules that says how functions pass arguments, return results, and share registers and the stack.", "chapter": 2}
+{"term": "instruction pointer", "def": "The register that holds the address of the next instruction the processor will execute, called %rip on x86-64.", "chapter": 2}
+{"term": "general-purpose register", "def": "A register that ordinary instructions can use for any integer or address value.", "chapter": 2}
+{"term": "little-endian", "def": "Storing a multi-byte value with its least significant byte at the lowest address.", "chapter": 2}
+{"term": "flags register", "def": "A register whose status bits record facts about arithmetic or compare results, such as whether they were zero or negative.", "chapter": 2}
+{"term": "AT&T syntax", "def": "The assembly syntax GNU tools use by default, with the source operand first and size suffixes on many mnemonics.", "chapter": 2}
+{"term": "memory operand", "def": "An instruction operand that names a location in memory by computing its address from registers and a constant.", "chapter": 2}
+{"term": "conditional jump", "def": "A jump that changes %rip only if its condition holds, usually a test of flag bits, and otherwise falls through to the next instruction.", "chapter": 2}
+{"term": "machine stack", "def": "A region of ordinary memory that functions use for return addresses, saved registers and local variables, growing and shrinking as calls happen.", "chapter": 2}
+{"term": "stack pointer", "def": "The register %rsp, which holds the address of the current top of the machine stack.", "chapter": 2}
+{"term": "stack frame", "def": "The block of stack memory one function call owns, holding its saved registers and local variables.", "chapter": 2}
+{"term": "prologue", "def": "The instructions at the start of a function that set up its stack frame.", "chapter": 2}
+{"term": "frame pointer", "def": "A register, usually %rbp, that holds a fixed address inside the current frame so locals can be found at constant offsets from it.", "chapter": 2}
+{"term": "epilogue", "def": "The instructions at the end of a function that tear down its stack frame and return.", "chapter": 2}
+{"term": "red zone", "def": "The 128 bytes below %rsp that System V guarantees no signal handler will overwrite, usable by a function as scratch space.", "chapter": 2}
+{"term": "ABI", "def": "Application binary interface, the rules compiled code must follow to interoperate, including the calling convention and data layout.", "chapter": 2}
+{"term": "argument register", "def": "The registers a calling convention assigns to pass a function's first arguments.", "chapter": 2}
+{"term": "callee-saved register", "def": "A register a called function may use only if it restores the original value before returning.", "chapter": 2}
+{"term": "caller-saved register", "def": "A register a called function may overwrite freely, so a caller that needs its value after the call must save it first.", "chapter": 2}
+{"term": "stack alignment", "def": "The rule that %rsp must be a multiple of some size, 16 bytes here, at a particular point in a call.", "chapter": 2}
+{"term": "disassembler", "def": "A tool that turns machine code bytes back into assembly text.", "chapter": 2}

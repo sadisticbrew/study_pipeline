@@ -1,0 +1,58 @@
+=== gcc version ===
+gcc (GCC) 16.2.1 20260810
+=== gcc -O0 -S fact (-fno-asynchronous-unwind-tables) ===
+fact:
+	pushq	%rbp
+	movq	%rsp, %rbp
+	subq	$16, %rsp
+	movq	%rdi, -8(%rbp)
+	cmpq	$1, -8(%rbp)
+	jg	.L2
+	movl	$1, %eax
+	jmp	.L3
+.L2:
+	movq	-8(%rbp), %rax
+	subq	$1, %rax
+	movq	%rax, %rdi
+	call	fact
+	imulq	-8(%rbp), %rax
+.L3:
+	leave
+	ret
+=== gcc -O2 -S fact (-fno-asynchronous-unwind-tables) ===
+fact:
+	movl	$1, %eax
+	cmpq	$1, %rdi
+	jle	.L1
+.L2:
+	imulq	%rdi, %rax
+	subq	$1, %rdi
+	cmpq	$1, %rdi
+	jne	.L2
+.L1:
+	ret
+=== objdump -dr: O0 fact, addresses, bytes, relocation ===
+0000000000000000 <fact>:
+   0:	55                   	push   %rbp
+   1:	48 89 e5             	mov    %rsp,%rbp
+   4:	48 83 ec 10          	sub    $0x10,%rsp
+   8:	48 89 7d f8          	mov    %rdi,-0x8(%rbp)
+   c:	48 83 7d f8 01       	cmpq   $0x1,-0x8(%rbp)
+  11:	7f 07                	jg     1a <fact+0x1a>
+  13:	b8 01 00 00 00       	mov    $0x1,%eax
+  18:	eb 15                	jmp    2f <fact+0x2f>
+  1a:	48 8b 45 f8          	mov    -0x8(%rbp),%rax
+  1e:	48 83 e8 01          	sub    $0x1,%rax
+  22:	48 89 c7             	mov    %rax,%rdi
+  25:	e8 00 00 00 00       	call   2a <fact+0x2a>
+			26: R_X86_64_PLT32	fact-0x4
+  2a:	48 0f af 45 f8       	imul   -0x8(%rbp),%rax
+  2f:	c9                   	leave
+  30:	c3                   	ret
+=== O0 activations: offsets from first &n ===
+n=5  &n - &n_first = 0 bytes
+n=4  &n - &n_first = -32 bytes
+n=3  &n - &n_first = -64 bytes
+n=2  &n - &n_first = -96 bytes
+n=1  &n - &n_first = -128 bytes
+fact(5) = 120

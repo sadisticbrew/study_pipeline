@@ -14,6 +14,7 @@ This repository is a personal textbook generator for one learner, described in
 - `tools/lab.py`: runs chapter labs in a sandbox (bubblewrap, or virtme-ng for kernel work).
 - `tools/lint.py`: style and format gate. `tools/render.py`: Markdown to light and dark PDFs.
 - `tools/claims.py`: each paragraph of a chapter with the facts it cites, for checking.
+- `tools/models_opencode.py`: switches the model roles back to OpenCode Go models.
 - `topics/<slug>/`: all state for one topic.
 
 ## Rules for every agent

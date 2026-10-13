@@ -1,0 +1,562 @@
+{
+  "slug": "compilers",
+  "title": "Compiler Engineering",
+  "created": "2026-10-12",
+  "goal": "By the end, you can design and build a working compiler for a small typed language in Go, from a hand-written lexer and Pratt/recursive-descent parser through a type checker with inference, lowering to a CFG-based IR in SSA form, classic dataflow-driven optimizations, instruction selection, register allocation and x86-64 code that links and runs. You can explain the theory underneath each phase (automata, LL and LR parsing, typing rules and unification, lattices and fixed points, dominance and SSA) and defend why each algorithm is correct. You can read and reason about real compilers: LLVM IR and its pass pipeline, Go's SSA backend, rustc's MIR and query system, and JITs like V8 and HotSpot with their inline caches, speculation and deoptimization. You also understand the runtime side, including calling conventions, linking, garbage collection support and unwinding, and how practitioners keep optimizers correct with UB semantics, translation validation and compiler fuzzing.",
+  "lab": {
+    "runner": "local",
+    "toolchains": [
+      "go",
+      "gcc",
+      "as",
+      "ld",
+      "objdump",
+      "clang",
+      "opt",
+      "llc",
+      "rustc",
+      "python3",
+      "gdb"
+    ],
+    "notes": "Labs grow one compiler, written in Go, for a small language across the book: each chapter adds or replaces a phase, and generated x86-64 assembly is assembled and linked with gcc and run. clang, opt and llc are used to inspect real LLVM IR and watch passes transform it; go build -gcflags and GOSSAFUNC show Go's own compiler at work; rustc is used to compare monomorphization and trait objects. Theory chapters (automata, LR tables, dataflow lattices, unification) use small Python or Go programs that compute and print the structures. JIT labs mmap executable memory inside the local sandbox; no root is needed."
+  },
+  "parts": [
+    {
+      "title": "Foundations and the front end",
+      "chapters": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "title": "Types",
+      "chapters": [
+        7,
+        8,
+        9
+      ]
+    },
+    {
+      "title": "Intermediate representations and analysis",
+      "chapters": [
+        10,
+        11,
+        12,
+        13
+      ]
+    },
+    {
+      "title": "Optimization",
+      "chapters": [
+        14,
+        15,
+        16,
+        17
+      ]
+    },
+    {
+      "title": "Back end",
+      "chapters": [
+        18,
+        19,
+        20
+      ]
+    },
+    {
+      "title": "Runtimes, JITs and real compilers",
+      "chapters": [
+        21,
+        22,
+        23
+      ]
+    }
+  ],
+  "chapters": [
+    {
+      "n": 1,
+      "slug": "what-a-compiler-does",
+      "title": "What a compiler actually does",
+      "part": 0,
+      "core_ideas": [
+        "A compiler translates a program into another language while preserving its meaning, while an interpreter runs it directly, and the AOT, bytecode VM and JIT designs sit on one spectrum between them",
+        "The pipeline of front end, middle end and back end, the IRs between them, and why the split exists (M languages times N targets)",
+        "Building a complete tiny compiler for arithmetic expressions that emits x86-64 assembly and runs",
+        "Bootstrapping: how a compiler written in its own language compiles itself"
+      ],
+      "prereqs": [
+        "has built a tree-walking interpreter",
+        "can read Go"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "done",
+      "quiz": null
+    },
+    {
+      "n": 2,
+      "slug": "the-target-machine",
+      "title": "The machine you compile to",
+      "part": 0,
+      "core_ideas": [
+        "Registers, memory and what x86-64 instructions actually do",
+        "The stack and stack frames: how locals, calls and recursion work at the machine level",
+        "The System V AMD64 calling convention: argument registers, caller- and callee-saved registers, return values and stack alignment",
+        "Reading compiler output with gcc -S, objdump and Compiler Explorer as a learning tool"
+      ],
+      "prereqs": [
+        "chapter 1",
+        "basic C syntax; no assembly assumed"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "done",
+      "quiz": null
+    },
+    {
+      "n": 3,
+      "slug": "lexing",
+      "title": "Lexing: regular languages and automata",
+      "part": 0,
+      "core_ideas": [
+        "Tokens, why lexing is its own phase, maximal munch and keywords",
+        "Regular expressions and NFAs through Thompson's construction",
+        "Subset construction to a DFA, and DFA minimization",
+        "Hand-written lexers in production (Go's scanner) versus generated ones (flex, re2c)"
+      ],
+      "prereqs": [
+        "chapter 1",
+        "sets and graphs at an intro discrete-math level"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 4,
+      "slug": "top-down-parsing",
+      "title": "Grammars and top-down parsing",
+      "part": 0,
+      "core_ideas": [
+        "Context-free grammars, derivations, parse trees and ambiguity",
+        "Encoding precedence and associativity, and eliminating left recursion",
+        "LL(1): FIRST and FOLLOW sets, predictive parsing and recursive descent",
+        "Pratt parsing for expressions"
+      ],
+      "prereqs": [
+        "chapter 3"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 5,
+      "slug": "lr-parsing",
+      "title": "Bottom-up parsing with LR",
+      "part": 0,
+      "core_ideas": [
+        "Shift-reduce parsing and handles",
+        "LR(0) items and the LR automaton, then SLR, LALR and LR(1)",
+        "Shift-reduce and reduce-reduce conflicts, and how bison resolves them",
+        "Why most production compilers hand-write their parsers, and how they recover from syntax errors"
+      ],
+      "prereqs": [
+        "chapter 4"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 6,
+      "slug": "semantic-analysis",
+      "title": "ASTs, scopes and semantic analysis",
+      "part": 0,
+      "core_ideas": [
+        "Designing ASTs with source positions, and lossless syntax trees for tooling (Roslyn, rust-analyzer)",
+        "Symbol tables, nested scopes and name resolution",
+        "Semantic checks and diagnostics that actually help the programmer",
+        "Desugaring the surface language into a smaller core"
+      ],
+      "prereqs": [
+        "chapter 4"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 7,
+      "slug": "type-systems",
+      "title": "Type systems from first principles",
+      "part": 1,
+      "core_ideas": [
+        "What a type system promises: soundness as progress and preservation, in plain words",
+        "Typing rules written as inference rules, and turning them into a type checker",
+        "Static and dynamic, nominal and structural typing, subtyping and variance"
+      ],
+      "prereqs": [
+        "chapter 6"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 8,
+      "slug": "type-inference",
+      "title": "Type inference",
+      "part": 1,
+      "core_ideas": [
+        "Generating type constraints and solving them with unification",
+        "Hindley-Milner, let-polymorphism and Algorithm W",
+        "Bidirectional type checking, and the local inference Rust, TypeScript and Go actually use"
+      ],
+      "prereqs": [
+        "chapter 7",
+        "recursion over trees"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 9,
+      "slug": "compiling-language-features",
+      "title": "Compiling high-level features",
+      "part": 1,
+      "core_ideas": [
+        "Closures and closure conversion: free variables and escaping environments",
+        "Generics: monomorphization (Rust, C++), boxing and dictionary passing, and Go's GC-shape stenciling",
+        "Dynamic dispatch with vtables, Go itabs and Rust trait objects",
+        "Algebraic data types and compiling pattern matches to decision trees"
+      ],
+      "prereqs": [
+        "chapters 2 and 7",
+        "Go interfaces and generics from programming in Go"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 10,
+      "slug": "lowering-to-ir",
+      "title": "Lowering to IR",
+      "part": 2,
+      "core_ideas": [
+        "Why compilers use IRs, and the tree, linear and graph families",
+        "Basic blocks and control-flow graphs",
+        "Lowering expressions, loops and short-circuit booleans to three-address code"
+      ],
+      "prereqs": [
+        "chapters 2 and 6"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 11,
+      "slug": "dataflow-analysis",
+      "title": "Dataflow analysis",
+      "part": 2,
+      "core_ideas": [
+        "Liveness and reaching definitions as worked problems",
+        "Lattices, transfer functions, monotonicity and fixed points",
+        "The worklist algorithm and why it terminates",
+        "Dominators and the dominator tree"
+      ],
+      "prereqs": [
+        "chapter 10"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 12,
+      "slug": "ssa",
+      "title": "Static single assignment form",
+      "part": 2,
+      "core_ideas": [
+        "Why SSA: one definition per name and use-def chains for free",
+        "Dominance frontiers and phi placement (Cytron et al.)",
+        "Renaming, and Braun et al.'s simple direct construction",
+        "Leaving SSA: copies, and the lost-copy and swap problems"
+      ],
+      "prereqs": [
+        "chapter 11"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 13,
+      "slug": "real-world-irs",
+      "title": "Real IRs: LLVM, Go SSA and sea of nodes",
+      "part": 2,
+      "core_ideas": [
+        "LLVM IR: modules, functions, types, phi nodes, and alloca with mem2reg",
+        "Go's SSA backend: generic and machine ops, rewrite rules, and GOSSAFUNC dumps",
+        "Sea of nodes in HotSpot C2 and V8 TurboFan, and why V8 moved away from it",
+        "Multi-level IRs: MLIR dialects and Rust's HIR and MIR"
+      ],
+      "prereqs": [
+        "chapter 12"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 14,
+      "slug": "scalar-optimizations",
+      "title": "Scalar optimizations on SSA",
+      "part": 3,
+      "core_ideas": [
+        "Constant propagation and sparse conditional constant propagation",
+        "Dead code elimination and copy propagation",
+        "Value numbering, GVN and common subexpression elimination",
+        "Peephole and instruction combining, pass managers and the phase-ordering problem"
+      ],
+      "prereqs": [
+        "chapters 11 to 13"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 15,
+      "slug": "loops-and-memory",
+      "title": "Loops and memory",
+      "part": 3,
+      "core_ideas": [
+        "Finding loops: back edges, natural loops and loop nests",
+        "Loop-invariant code motion, induction variables and strength reduction",
+        "Alias analysis, and promoting memory to registers with mem2reg and SROA",
+        "Loop unrolling and auto-vectorization in outline"
+      ],
+      "prereqs": [
+        "chapter 14"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 16,
+      "slug": "interprocedural",
+      "title": "Interprocedural optimization",
+      "part": 3,
+      "core_ideas": [
+        "Call graphs and inlining heuristics",
+        "Devirtualization, and escape analysis deciding stack versus heap in Go",
+        "Link-time optimization (ThinLTO) and profile-guided optimization"
+      ],
+      "prereqs": [
+        "chapters 9 and 14"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 17,
+      "slug": "optimization-correctness",
+      "title": "When optimizations are wrong",
+      "part": 3,
+      "core_ideas": [
+        "Undefined behavior and why compilers exploit it",
+        "LLVM's undef, poison and freeze",
+        "Translation validation with Alive2",
+        "Testing compilers: random program generation (Csmith), fuzzing and differential testing"
+      ],
+      "prereqs": [
+        "chapters 13 and 14"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 18,
+      "slug": "instruction-selection",
+      "title": "Instruction selection and scheduling",
+      "part": 4,
+      "core_ideas": [
+        "Tiling trees with instruction patterns: maximal munch and optimal tiling by dynamic programming",
+        "DAG-based selection in LLVM: SelectionDAG, GlobalISel and TableGen target descriptions",
+        "Instruction scheduling: latencies, pipelines and list scheduling"
+      ],
+      "prereqs": [
+        "chapters 2 and 10"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 19,
+      "slug": "register-allocation",
+      "title": "Register allocation",
+      "part": 4,
+      "core_ideas": [
+        "Live ranges and interference graphs",
+        "Graph-coloring allocation (Chaitin-Briggs): simplify, spill and coalesce",
+        "Linear scan allocation, and why JITs favor it",
+        "SSA-based allocation on chordal graphs, and LLVM's greedy allocator as a real case"
+      ],
+      "prereqs": [
+        "chapters 11 and 12"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 20,
+      "slug": "objects-linking-loading",
+      "title": "Object files, linking and loading",
+      "part": 4,
+      "core_ideas": [
+        "ELF object files: sections, symbols and relocations",
+        "Static linking and symbol resolution, then dynamic linking with PIC, the GOT and the PLT",
+        "Loading and starting a process, and DWARF debug info in outline"
+      ],
+      "prereqs": [
+        "chapter 2"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 21,
+      "slug": "runtimes-and-gc",
+      "title": "Runtimes and garbage collection",
+      "part": 5,
+      "core_ideas": [
+        "What a language runtime provides, and how compiled code calls into it",
+        "Tracing collectors: mark-sweep, copying, generational, and Go's concurrent tri-color collector",
+        "The compiler's side of GC: stack maps, safepoints and write barriers",
+        "Exceptions and zero-cost stack unwinding"
+      ],
+      "prereqs": [
+        "chapters 2, 9 and 20"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 22,
+      "slug": "jit-compilation",
+      "title": "JIT compilation",
+      "part": 5,
+      "core_ideas": [
+        "From bytecode interpreter to JIT: dispatch cost, profiling and tiered compilation",
+        "Inline caches and hidden classes",
+        "Speculative optimization, deoptimization and on-stack replacement",
+        "Emitting machine code at run time: executable memory, W^X and copy-and-patch"
+      ],
+      "prereqs": [
+        "chapters 13, 16 and 21",
+        "the learner's own interpreter"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 23,
+      "slug": "production-compilers",
+      "title": "Inside production compilers",
+      "part": 5,
+      "core_ideas": [
+        "A tour of the Go gc compiler from source to object file",
+        "Clang, LLVM and rustc: driver architecture and query-based incremental compilation",
+        "How practitioners work: reading IR dumps, bisecting miscompiles, benchmarking and contributing"
+      ],
+      "prereqs": [
+        "all earlier chapters"
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    }
+  ]
+}

@@ -25,8 +25,8 @@ topics/
         chapter.md             the chapter (see style/FORMAT.md)
         check.md               claim-check report
         summary.md             ~200 words: what the reader now knows
-        chapter.pdf            light theme
-        chapter-dark.pdf       dark theme
+        chapter<N>.pdf         light theme, N unpadded (chapter2.pdf)
+        chapter<N>-dark.pdf    dark theme
         lab/<name>/            one directory per lab
         work/                  scratch: scout outputs, drafts
 ```

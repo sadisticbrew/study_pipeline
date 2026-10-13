@@ -100,7 +100,7 @@ Spawn one `sp-checker` with `MODE=fix`, `CHAPTER=CD/chapter.md`, `CHAPTER_DIR=CD
 
 Report briefly:
 
-- the paths to `chapter.pdf` and `chapter-dark.pdf`
+- the paths to `chapter<n>.pdf` and `chapter<n>-dark.pdf`
 - the word count against the budget
 - the checker's summary line, and anything it flagged for a human
 - each remaining `[@unverified]` claim, in one line
