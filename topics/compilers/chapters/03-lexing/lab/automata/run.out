@@ -1,0 +1,51 @@
+== Python ==
+3.14.7 (main, Aug 14 2026, 06:38:32) [GCC 16.2.1 20260810]
+
+== Running token automaton (complete DFA, including sink) ==
+NFA states=21 edges=23
+accept NFA states: 4:IF, 8:IDENT, 12:INT, 16:LT, 20:LE
+DFA states=9 minimized=8
+state | NFA set | accept candidates -> chosen | 0-9 f i other a-z < =
+ 0 | 0,1,5,11,13,15,17 |  -> None | 1 4 5 4 2 3
+ 1 | 12,13,14 | INT -> INT | 1 3 3 3 3 3
+ 2 | 16,18,19 | LT -> LT | 3 3 3 3 3 6
+ 3 |  |  -> None | 3 3 3 3 3 3
+ 4 | 6,7,8,9 | IDENT -> IDENT | 7 7 7 7 3 3
+ 5 | 2,3,6,7,8,9 | IDENT -> IDENT | 7 8 7 7 3 3
+ 6 | 20 | LE -> LE | 3 3 3 3 3 3
+ 7 | 8,9,10 | IDENT -> IDENT | 7 7 7 7 3 3
+ 8 | 4,8,9,10 | IF/IDENT -> IF | 7 7 7 7 3 3
+
+== Longest-match scan (five rules plus punctuation/trivia) ==
+IF      'if'
+IDENT   'x1'
+LE      '<='
+INT     '10'
+LBRACE  '{'
+IDENT   'y'
+ASSIGN  '='
+IDENT   'x1'
+STAR    '*'
+INT     '2'
+RBRACE  '}'
+
+== nth symbol from end is a: (a|b)*a(a|b)^(n-1) ==
+n NFA DFA minimized 2^n
+1 11 3 2 2
+2 17 5 4 4
+3 23 9 8 8
+4 29 17 16 16
+5 35 33 32 32
+6 41 65 64 64
+7 47 129 128 128
+8 53 257 256 256
+9 59 513 512 512
+10 65 1025 1024 1024
+
+== Measured fullmatch: a? repeated n, then a repeated n; input a^n ==
+n re_ms NFA_ms re_match NFA_match
+8 0.025 0.079 True True
+12 0.108 0.143 True True
+16 1.546 0.176 True True
+20 15.359 0.154 True True
+24 244.913 0.249 True True

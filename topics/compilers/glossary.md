@@ -6,6 +6,8 @@
 
 **ahead-of-time compilation** (chapter 1). Translating code before it runs, commonly to machine code.
 
+**alternation** (chapter 3). The regular expression operation that matches anything either of two patterns matches.
+
 **argument register** (chapter 2). The registers a calling convention assigns to pass a function's first arguments.
 
 **assembler** (chapter 1). A program that turns assembly language text into machine code.
@@ -32,6 +34,10 @@
 
 **conditional jump** (chapter 2). A jump that changes %rip only if its condition holds, usually a test of flag bits, and otherwise falls through to the next instruction.
 
+**DFA** (chapter 3). An automaton with exactly one next state for each state and input character, and no ε-transitions.
+
+**DFA minimization** (chapter 3). Merging the states of a DFA that no input string can tell apart, giving the smallest equivalent DFA.
+
 **disassembler** (chapter 2). A tool that turns machine code bytes back into assembly text.
 
 **epilogue** (chapter 2). The instructions at the end of a function that tear down its stack frame and return.
@@ -52,15 +58,29 @@
 
 **just-in-time compilation** (chapter 1). Compiling parts of a program to machine code while the program is running, usually the parts that run most often.
 
+**keyword** (chapter 3). A word the language reserves for its own syntax, which therefore cannot be used as a name.
+
+**kleene star** (chapter 3). The regular expression operation that matches zero or more repetitions of a pattern.
+
+**lexeme** (chapter 3). The exact characters from the source that make up one token.
+
+**lexer** (chapter 3). The compiler phase that reads source characters and produces a stream of tokens, also called a scanner.
+
+**lexer generator** (chapter 3). A tool that reads token rules written as regular expressions with actions and writes the source code of a lexer.
+
 **linker** (chapter 1). A program that combines object files and libraries into an executable or library, connecting references between them.
 
 **little-endian** (chapter 2). Storing a multi-byte value with its least significant byte at the lowest address.
 
 **machine stack** (chapter 2). A region of ordinary memory that functions use for return addresses, saved registers and local variables, growing and shrinking as calls happen.
 
+**maximal munch** (chapter 3). The lexing rule that the next token is always the longest prefix of the remaining input that forms a valid token, also called longest match.
+
 **memory operand** (chapter 2). An instruction operand that names a location in memory by computing its address from registers and a constant.
 
 **middle end** (chapter 1). The part of a compiler that improves the program in an internal form, usually largely independent of the source language and target machine.
+
+**NFA** (chapter 3). A graph of states with character-labelled or ε-edges that accepts a string if some path from the start state, reading the string, ends in an accepting state.
 
 **object file** (chapter 1). A file containing machine code and linking information, not yet combined with the other pieces it needs to run.
 
@@ -70,9 +90,15 @@
 
 **register** (chapter 1). A small, very fast storage slot inside the processor that instructions read and write directly.
 
+**regular expression** (chapter 3). A pattern that describes a set of strings using concatenation, alternation and repetition.
+
+**regular language** (chapter 3). A set of strings that some regular expression describes, equivalently one that some finite automaton recognises.
+
 **return address** (chapter 2). The address of the instruction just after a call, saved on the stack so the callee's ret can resume the caller there.
 
 **self-hosting compiler** (chapter 1). A compiler written in the same language it compiles.
+
+**semicolon insertion** (chapter 3). Go's lexer rule that adds a semicolon token at the end of a line when the line's last token is one of the kinds listed by the specification.
 
 **source language** (chapter 1). The language a compiler reads its input program in.
 
@@ -84,6 +110,20 @@
 
 **stack-machine code generation** (chapter 1). Generating code that keeps every intermediate result on a stack, pushing operands and popping them when an operation needs them.
 
+**subset construction** (chapter 3). The algorithm that builds a DFA whose states are the sets of NFA states reachable on some input.
+
 **target language** (chapter 1). The language a compiler writes its output program in.
 
+**thompson’s construction** (chapter 3). A method that builds an NFA from a regular expression by combining one small NFA fragment per operator.
+
+**token** (chapter 3). One meaningful unit of source text, represented here by its category together with the text it came from.
+
+**token kind** (chapter 3). The category a token belongs to, such as identifier, integer literal or less-or-equal operator.
+
 **virtual machine** (chapter 1). A software execution environment for an instruction set, which may interpret instructions or compile them to machine code.
+
+**zero extension** (chapter 2). Widening a value to more bits by filling the new high bits with zeros.
+
+**ε-closure** (chapter 3). The set of NFA states reachable from a given set by ε-transitions alone, including the set itself.
+
+**ε-transition** (chapter 3). An edge in an automaton that can be followed without reading any input character.

@@ -41,3 +41,23 @@
 {"term": "caller-saved register", "def": "A register a called function may overwrite freely, so a caller that needs its value after the call must save it first.", "chapter": 2}
 {"term": "stack alignment", "def": "The rule that %rsp must be a multiple of some size, 16 bytes here, at a particular point in a call.", "chapter": 2}
 {"term": "disassembler", "def": "A tool that turns machine code bytes back into assembly text.", "chapter": 2}
+{"term": "keyword", "def": "A word the language reserves for its own syntax, which therefore cannot be used as a name.", "chapter": 3}
+{"term": "token", "def": "One meaningful unit of source text, represented here by its category together with the text it came from.", "chapter": 3}
+{"term": "token kind", "def": "The category a token belongs to, such as identifier, integer literal or less-or-equal operator.", "chapter": 3}
+{"term": "lexeme", "def": "The exact characters from the source that make up one token.", "chapter": 3}
+{"term": "lexer", "def": "The compiler phase that reads source characters and produces a stream of tokens, also called a scanner.", "chapter": 3}
+{"term": "maximal munch", "def": "The lexing rule that the next token is always the longest prefix of the remaining input that forms a valid token, also called longest match.", "chapter": 3}
+{"term": "semicolon insertion", "def": "Go's lexer rule that adds a semicolon token at the end of a line when the line's last token is one of the kinds listed by the specification.", "chapter": 3}
+{"term": "regular expression", "def": "A pattern that describes a set of strings using concatenation, alternation and repetition.", "chapter": 3}
+{"term": "alternation", "def": "The regular expression operation that matches anything either of two patterns matches.", "chapter": 3}
+{"term": "kleene star", "def": "The regular expression operation that matches zero or more repetitions of a pattern.", "chapter": 3}
+{"term": "regular language", "def": "A set of strings that some regular expression describes, equivalently one that some finite automaton recognises.", "chapter": 3}
+{"term": "NFA", "def": "A graph of states with character-labelled or ε-edges that accepts a string if some path from the start state, reading the string, ends in an accepting state.", "chapter": 3}
+{"term": "ε-transition", "def": "An edge in an automaton that can be followed without reading any input character.", "chapter": 3}
+{"term": "thompson’s construction", "def": "A method that builds an NFA from a regular expression by combining one small NFA fragment per operator.", "chapter": 3}
+{"term": "DFA", "def": "An automaton with exactly one next state for each state and input character, and no ε-transitions.", "chapter": 3}
+{"term": "ε-closure", "def": "The set of NFA states reachable from a given set by ε-transitions alone, including the set itself.", "chapter": 3}
+{"term": "subset construction", "def": "The algorithm that builds a DFA whose states are the sets of NFA states reachable on some input.", "chapter": 3}
+{"term": "DFA minimization", "def": "Merging the states of a DFA that no input string can tell apart, giving the smallest equivalent DFA.", "chapter": 3}
+{"term": "lexer generator", "def": "A tool that reads token rules written as regular expressions with actions and writes the source code of a lexer.", "chapter": 3}
+{"term": "zero extension", "def": "Widening a value to more bits by filling the new high bits with zeros.", "chapter": 2}

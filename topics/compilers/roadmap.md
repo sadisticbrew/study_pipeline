@@ -16,7 +16,7 @@
     - The stack and stack frames: how locals, calls and recursion work at the machine level
     - The System V AMD64 calling convention: argument registers, caller- and callee-saved registers, return values and stack alignment
     - Reading compiler output with gcc -S, objdump and Compiler Explorer as a learning tool
-3. **Lexing: regular languages and automata** [pending]
+3. **Lexing: regular languages and automata** [done]
     - Tokens, why lexing is its own phase, maximal munch and keywords
     - Regular expressions and NFAs through Thompson's construction
     - Subset construction to a DFA, and DFA minimization
@@ -130,4 +130,4 @@
     - Clang, LLVM and rustc: driver architecture and query-based incremental compilation
     - How practitioners work: reading IR dumps, bisecting miscompiles, benchmarking and contributing
 
-Progress: 2 of 23 chapters done or known.
+Progress: 3 of 23 chapters done or known.
