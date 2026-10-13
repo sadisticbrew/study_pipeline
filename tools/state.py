@@ -14,6 +14,9 @@ Usage (paths are relative to the repo root; [slug] defaults to topics/.current):
   state.py merge [slug] [--chapter N] [--json] <scout files...>
                                         merge scout records: sources into the topic library,
                                         facts (only with --chapter) into that chapter's facts.jsonl
+  state.py fact [slug] <n> <F-id> --claim TEXT
+                                        replace a fact's one-line claim, e.g. to narrow one that
+                                        overstates its quote (source, locator, quote never change)
   state.py glossary [slug] <n>          collect .term spans of chapter n into glossary.jsonl and
                                         regenerate glossary.md
   state.py status [slug]                short human summary
@@ -871,6 +874,32 @@ def cmd_merge(a) -> int:
     return 0
 
 
+def cmd_fact(a) -> int:
+    tdir = topic_dir(a.slug)
+    ch = get_chapter(load_state(tdir), a.n)
+    claim = norm_ws(a.claim)
+    if not claim:
+        raise Fail("--claim must not be empty")
+    cdir = existing_chapter_dir(tdir, ch)
+    fp = cdir / "facts.jsonl" if cdir else None
+    if not fp or not fp.is_file():
+        raise Fail(f"chapter {a.n} has no facts.jsonl yet")
+    lines = fp.read_text(encoding="utf-8").splitlines()
+    for i, line in enumerate(lines):
+        try:
+            rec = json.loads(line) if line.strip() else None
+        except json.JSONDecodeError:
+            continue
+        if isinstance(rec, dict) and rec.get("id") == a.fid:
+            old, rec["claim"] = rec.get("claim", ""), claim
+            lines[i] = jline(rec)
+            write_text_atomic(fp, "\n".join(lines) + "\n")
+            print(f"{a.fid} claim was: {old}")
+            print(f"{a.fid} claim now: {claim}")
+            return 0
+    raise Fail(f"no fact {a.fid} in {rel(fp)}")
+
+
 # ---------------------------------------------------------------- glossary
 def stringify(node) -> str:
     if isinstance(node, list):
@@ -1064,6 +1093,9 @@ def build_parser(cmd):
         p.add_argument("args", nargs="+", metavar="[slug] file")
         p.add_argument("--chapter", type=int, metavar="N")
         p.add_argument("--json", action="store_true", help="machine-readable result")
+    elif cmd == "fact":
+        p.add_argument("args", nargs="+", metavar="[slug] n F-id")
+        p.add_argument("--claim", required=True, help="the new one-sentence claim")
     else:
         return None
     return p
@@ -1071,7 +1103,7 @@ def build_parser(cmd):
 
 COMMANDS = {"init": cmd_init, "current": cmd_current, "validate": cmd_validate, "roadmap": cmd_roadmap,
             "chapter-dir": cmd_chapter_dir, "next": cmd_next, "set": cmd_set, "merge": cmd_merge,
-            "glossary": cmd_glossary, "status": cmd_status}
+            "fact": cmd_fact, "glossary": cmd_glossary, "status": cmd_status}
 
 
 def main(argv=None) -> int:
@@ -1099,6 +1131,11 @@ def main(argv=None) -> int:
             a.assignments = rest[1:]
         elif cmd == "merge":
             a.slug, a.files = split_slug(a.args, 1, lambda s: not is_topic(s) or Path(s).is_file())
+        elif cmd == "fact":
+            a.slug, rest = split_slug(a.args, 2, looks_int)
+            if len(rest) != 2 or id_num(FID_RE, rest[1]) is None:
+                raise Fail("usage: state.py fact [slug] <n> <F-id> --claim TEXT")
+            a.n, a.fid = parse_n(rest[0]), rest[1]
         return COMMANDS[cmd](a)
     except Fail as e:
         print(f"error: {e}", file=sys.stderr)

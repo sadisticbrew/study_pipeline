@@ -27,7 +27,8 @@ runs. A capable mid-tier model works well, for example
 ## How correctness is handled
 
 - Scouts copy short verbatim quotes from pinned versions of primary sources into
-  `facts.jsonl`.
+  `facts.jsonl`. They read every source through `tools/fetch.py`, which keeps a text copy
+  and remembers links that failed, so a dead link is not retried by every agent.
 - The writer may only assert what those facts support, and must mark anything else
   `[@unverified]`, which shows up visibly in the PDF.
 - Lab code and output are included from real sandboxed runs (`tools/lab.py`), never typed by
@@ -40,6 +41,8 @@ runs. A capable mid-tier model works well, for example
 All tools are Python stdlib only. Each one supports `--help`.
 
 - `tools/state.py`: topics, roadmap, merging sources and facts, glossary, and progress.
+- `tools/fetch.py`: downloads a source once, as text, into `topics/<slug>/cache/`, and fails
+  fast on dead or stalled links.
 - `tools/lab.py`: runs labs with bubblewrap, or with virtme-ng for kernel work.
   `lab.py doctor` checks this machine.
 - `tools/lint.py`: style and format gate. Tune the thresholds and phrase lists in
@@ -50,4 +53,13 @@ All tools are Python stdlib only. Each one supports `--help`.
 `style/sample/` is a complete reference chapter. Run
 `python3 tools/render.py style/sample/chapter.md` to preview template changes.
 
-Requires: pandoc, typst, graphviz, bubblewrap, and virtme-ng (only for kernel labs).
+Requires: pandoc, typst, graphviz, bubblewrap, curl, poppler (`pdftotext`), and virtme-ng
+(only for kernel labs).
+
+## Books
+
+Scouts read a book from your own copy when there is one, and otherwise look for a readable
+copy online. To give them your copy, put it at
+`topics/<slug>/library/<S-id>.pdf` (or `.epub`, `.html`, `.txt`), using the book's id from
+`sources.jsonl`. The folder is not tracked by git. After `/chapter`, the report lists any
+book the scouts needed but could not read.

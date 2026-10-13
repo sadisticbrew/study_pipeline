@@ -2,3 +2,5 @@
 __pycache__/
 *.pyc
 *.pdf
+topics/*/cache/
+topics/*/library/

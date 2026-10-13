@@ -11,6 +11,8 @@ This repository is a personal textbook generator for one learner, described in
   `style/WRITER.md`: the writer procedure. `style/sample/`: a complete reference chapter.
 - `tools/SCHEMAS.md`: every state and data file format.
 - `tools/state.py`: topics, roadmap, merging sources and facts, glossary, and progress.
+- `tools/fetch.py`: reads a source (URL, or S-id for the learner's own book copies) once,
+  as text, into the topic cache, and fails fast on dead or stalled links.
 - `tools/lab.py`: runs chapter labs in a sandbox (bubblewrap, or virtme-ng for kernel work).
 - `tools/lint.py`: style and format gate. `tools/render.py`: Markdown to light and dark PDFs.
 - `tools/claims.py`: each paragraph of a chapter with the facts it cites, for checking.
@@ -20,7 +22,8 @@ This repository is a personal textbook generator for one learner, described in
 ## Rules for every agent
 
 - Use the tools in `tools/` for state changes they cover, instead of hand-editing generated
-  files (`roadmap.md`, `glossary.md`, `glossary.jsonl`, `run.out`, `run.status.json`).
+  files (`roadmap.md`, `glossary.md`, `glossary.jsonl`, `unreachable.jsonl`, `run.out`,
+  `run.status.json`).
 - Never invent sources, quotes, citations, or program output. A missing fact is better than
   a wrong one.
 - Never use sudo on the host. Kernel-level labs run in the `vng` runner.

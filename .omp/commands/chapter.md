@@ -38,9 +38,13 @@ chapters marked `known`, `topics/<slug>/glossary.jsonl`, `topics/<slug>/pitfalls
 7. **Misconceptions.** Mistakes learners really make about this material, at most two.
 8. **Fact questions.** 12 to 25 precise questions whose answers the chapter will assert:
    rules, numbers, version-specific behavior, edge cases, history, and anything in
-   `pitfalls.md` that touches this chapter. Skip what is common knowledge, or what the
-   chapter derives itself, such as arithmetic shown step by step. Group the questions into
-   3 to 5 batches of at most 6, by source area, and suggest source ids for each batch.
+   `pitfalls.md` that touches this chapter. Every technical claim this brief makes itself,
+   in the opening, the section points and the misconceptions, needs a question unless the
+   chapter derives it step by step. Skip common knowledge. Group the questions into 3 to 5
+   batches of at most 6, by source area, and suggest source ids for each batch that a scout
+   can read: web pages, specs, source code, or books with a copy in `topics/<slug>/library/`
+   or a readable copy online. For history, suggest a readable secondary account rather than
+   the original paper.
 9. **Lab plan.** Following the topic's `lab` profile: for each lab, give a name, what it
    demonstrates, the runner, the expected result (`success` or `failure`), and what its
    output should make visible. Or write "no lab" with a reason.
@@ -70,7 +74,8 @@ lab agent's notes (line ranges, and what each output shows) and the unanswered q
 
 ## 4. Check
 
-Spawn one `sp-checker` with `MODE=fix`, `CHAPTER=CD/chapter.md`, `CHAPTER_DIR=CD`,
+Copy `CD/chapter.md` to `CD/work/draft.md`, so the checker's changes can be seen later. Then
+spawn one `sp-checker` with `MODE=fix`, `CHAPTER=CD/chapter.md`, `CHAPTER_DIR=CD`,
 `FACTS=CD/facts.jsonl`, `SOURCES=topics/<slug>/sources.jsonl`, `TOPIC_DIR=topics/<slug>`,
 `REPORT=CD/check.md`, the slug, and the chapter number.
 
@@ -105,6 +110,8 @@ Report briefly:
 - the checker's summary line, and anything it flagged for a human
 - each remaining `[@unverified]` claim, in one line
 - the lab results
+- each book the scouts said would have answered a question, with the path where the learner
+  can put a copy (`topics/<slug>/library/<S-id>.pdf`, using the id `merge` gave it)
 - the total time, and the time per step
 
 Suggest `/quiz <n>` once the learner has read the chapter, and `/errata` if they find a

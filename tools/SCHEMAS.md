@@ -17,6 +17,9 @@ topics/
     glossary.jsonl             every term marked so far (generated from chapters)
     glossary.md                generated from glossary.jsonl
     pitfalls.md                errors found by /errata, read by future checks
+    unreachable.jsonl          sources tools/fetch.py could not read (written only by fetch.py)
+    library/                   the learner's own copies of books: <S-id>.pdf, .epub, ... (not in git)
+    cache/                     text copies of fetched sources, made by tools/fetch.py (not in git)
     work/                      scratch for /topic scouts
     chapters/
       NN-<chapter-slug>/

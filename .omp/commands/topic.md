@@ -82,4 +82,6 @@ final single question asking whether the roadmap needs any changes, with the opt
 
 Keep the report short: the roadmap as numbered parts and chapters, showing which are known;
 the lab profile and any missing toolchain, with the install command for CachyOS (`pacman`);
-the number of sources in the library; and the next step, `/chapter`.
+the number of sources in the library; the book sources, each with the path where the learner
+can put their own copy so scouts can read it (`topics/<slug>/library/<S-id>.pdf`); and the
+next step, `/chapter`.

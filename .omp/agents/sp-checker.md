@@ -21,8 +21,9 @@ source of each fact it cites, so you can judge each paragraph against its eviden
 pass. Open
 `FACTS` directly only to look for a fact that would support an uncited or miscited claim.
 Also read `TOPIC_DIR/pitfalls.md` (errors found in earlier chapters, which must not
-reappear), the `run.out` of every included lab, and `style/FORMAT.md` if the markup is
-unclear. Do not read the source of the tools in `tools/`.
+reappear), `TOPIC_DIR/roadmap.md` (what later chapters cover), the `run.out` of every
+included lab, and `style/FORMAT.md` if the markup is unclear. Do not read the source of the
+tools in `tools/`.
 
 ## What to check
 
@@ -38,15 +39,18 @@ definitions, self-test questions, and answers. For every technical statement, de
   it.
 - **output mismatch**: the text describes lab output that `run.out` does not show. Fix the
   text.
-- **misleading simplification**: true as stated, but it will plant a wrong model that a
-  later chapter has to undo, and the text does not flag it as a simplification. Add a
-  short qualifying clause.
+- **misleading simplification**: a reader who believes the sentence would predict something
+  false about a case that this chapter or a later chapter in the roadmap covers, and the
+  text does not flag it as a simplification. Add a short qualifying clause. A sentence that
+  is only less complete than the full truth is **supported**: leave it alone, because
+  qualifiers that guard against nothing make the chapter longer and harder to read.
 
 The evidence is always the verbatim `quote`. The fact's `claim` field is only the scout's
 one-line summary, and it can overstate its own quote, for example by dropping a word like
 "periodically" or "may". Never accept a sentence because it matches a `claim`. When a
-`claim` overstates its quote, judge the chapter against the quote, and list that fact in
-your report as a stretched fact so the summary can be corrected.
+`claim` overstates its quote, judge the chapter against the quote and count it as a
+stretched fact. In fix mode, also narrow the claim to what the quote says, with
+`python3 tools/state.py fact <slug> <n> <F-id> --claim "<narrower claim>"`.
 
 Uncited sentences need the same care, and misconception and aside blocks are where they
 hide. Compare each uncited technical statement with the related facts in `FACTS`. A
@@ -61,14 +65,16 @@ a lookup when in doubt, never disclaimed.
 
 ## Verifying unsupported claims
 
-Use `web_search` and `read` on primary sources only. Make at most about ten lookups. When you
+Find primary sources with `web_search`, and read them only through
+`python3 tools/fetch.py <slug> <url or S-id>`, which prints the path of a local text copy and
+says what to do when a source cannot be read. Pages the scouts read are already in its
+cache, so fetching them again costs no download. Make at most about ten lookups. When you
 confirm a claim, record it as a fact: write scout-format records (see `tools/SCHEMAS.md`,
 give each fact a `key`) to `CHAPTER_DIR/work/checker.jsonl`, then run
-`python3 tools/state.py merge --chapter <n> --json CHAPTER_DIR/work/checker.jsonl` from the
-repo root, using the topic and chapter from the task message, and cite the F ids it prints.
-The same rules apply as for scouts. Quotes are verbatim and from a page you actually read.
-When you cannot confirm a claim, either soften it or mark it `[@unverified]`. When you find
-it is wrong, fix it.
+`python3 tools/state.py merge <slug> --chapter <n> --json CHAPTER_DIR/work/checker.jsonl`
+from the repo root, and cite the F ids it prints. Quotes are verbatim and from a page you
+actually read. When you cannot confirm a claim, either soften it or mark it `[@unverified]`.
+When you find it is wrong, fix it.
 
 ## How to edit (MODE fix)
 
@@ -78,12 +84,12 @@ it is wrong, fix it.
   "not a sourced formula". Evidence is expressed only through citations and
   `[@unverified]`. Notes for humans go in the report.
 - Never remove a `.term` marker or a lab include.
-- In `report-only` mode, do not edit `CHAPTER`, and do not add facts.
+- In `report-only` mode, do not edit `CHAPTER` or `FACTS`: add no facts and change no claims.
 
 ## Report
 
-Write `REPORT` as Markdown. Start with one summary line of counts per category. Then add a
-table with one row per finding that is not `supported`: the line, the category, the original
-text (shortened), what you changed or recommend, and the evidence (fact id or URL). End with
-any doubts that a human should look at. Reply with the summary line and the path to the
-report.
+Write `REPORT` as Markdown. Start with one summary line of counts per category, including
+stretched facts. Then add a table with one row per finding that is not `supported`: the
+line, the category, what you changed or recommend in at most about 15 words, and the
+evidence as fact ids, lab line ranges or a URL. End with at most five doubts that a human
+should look at, one line each. Reply with the summary line and the path to the report.

@@ -25,6 +25,21 @@ or the date on the page. Reading a specific version is what makes a fact checkab
 Read the topic's existing `sources.jsonl` first and reuse its `S` ids instead of adding
 duplicates.
 
+## Reading sources
+
+Read every web page, PDF and source file through
+`python3 tools/fetch.py <slug> <url or S-id>`, never with `read`, `curl` or `wget` on the URL
+itself. It prints the path of a local text copy to `read` or `grep`, and it tells you what to
+do when a source cannot be read. Search with `web_search` as usual.
+
+- Read a book from the learner's own copy when there is one, by fetching its S-id.
+  Otherwise look for a readable copy online, as for any other source. If a book you cannot
+  read would answer a question, add a `source` record for it with an empty `url` and its
+  edition in `version`, and name it in your reply so the learner can add a copy.
+- Fetch source code at a pinned ref, for example
+  `https://raw.githubusercontent.com/<org>/<repo>/<tag>/<path>`, and use `path:line`
+  locators.
+
 ## Mode: library
 
 Find the sources a learner would need to master the topic areas you were given. Write only
@@ -32,7 +47,7 @@ Find the sources a learner would need to master the topic areas you were given. 
 for.
 
 This mode is a catalogue, not research. Each chapter's facts mode reads sources in depth
-later. Rely on search results and your own knowledge of the canonical works. Open a page
+later. Rely on search results and your own knowledge of the canonical works. Fetch a page
 only to confirm that it exists and to pin its version, and never read a source end to end.
 Stop at the count you were asked for, stay within the search budget, and aim to finish
 within about four minutes.
@@ -55,19 +70,14 @@ source you have actually opened and read, and write a `fact` record:
   reply instead. A missing fact is far better than a wrong one.
 - Write at most two facts per question, and usually one. The writer reads every fact, so
   a short, precise fact file makes a better chapter than a long one.
-- A quote must come from text you can actually read. If a source is a scanned PDF, is
-  paywalled, or does not render after two attempts, stop trying. Use the next-best readable
-  source, such as the authors' lecture notes, a textbook chapter, or the dissertation, or
-  skip the question.
+- When two fetches for one question have failed or brought back no usable text, such as a
+  paywall, stop chasing it. Answer it from a readable source that covers the same point, such
+  as the authors' lecture notes or a textbook chapter, or skip it.
 - Read only sources and your own output file. Do not read other scouts' files or the source
   of the tools in `tools/`.
-
-For source code, read it at a pinned ref, for example
-`https://raw.githubusercontent.com/<org>/<repo>/<tag>/<path>`, or with a shallow clone into
-`/tmp`, and use `path:line` locators.
 
 ## Budget and reply
 
 Respect the search and time budget in your task. When the time is nearly up, write what you
 have and stop, because partial results are fine. Reply with the file you wrote, the record
-counts, and the questions you could not answer.
+counts, the questions you could not answer, and any book that would have answered them.

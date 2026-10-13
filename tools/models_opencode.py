@@ -19,7 +19,7 @@ CONFIG = Path(".omp/config.yml")
 OPENCODE = {
     "sp_writer": "opencode-go/glm-5.2:low",
     "sp_checker": "opencode-go/deepseek-v4-pro:high",
-    "sp_scout": "opencode-go/deepseek-v4.1-flash:medium",
+    "sp_scout": "opencode-go/deepseek-v4.1-flash:low",
     "sp_lab": "opencode-go/kimi-k2.7-code:high",
 }
 

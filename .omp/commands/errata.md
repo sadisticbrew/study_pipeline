@@ -23,7 +23,8 @@ Decide which case this is, using primary sources:
   term the learner did not have.
 - **Learner misunderstanding.** The chapter is correct and clear.
 
-Read the cited source passage yourself. When the existing facts do not settle the question,
+Read the cited source passage yourself, through `python3 tools/fetch.py <slug> <S-id>`, which
+prints the path of a local text copy. When the existing facts do not settle the question,
 look it up in a primary source. For anything larger than a couple of lookups, spawn an
 `sp-scout` in facts mode, and merge its output with
 `python3 tools/state.py merge <slug> --chapter <n>`.
@@ -31,10 +32,11 @@ look it up in a primary source. For anything larger than a couple of lookups, sp
 ## 3. Act
 
 - **Error:** fix the passage with the smallest change that makes it true, in the chapter's
-  voice. Correct or add facts through `merge` when a fact was wrong or missing. Then search
-  every later chapter with status `done` for the same mistake, and fix it there too. Also
-  fix the mistake in `CD/summary.md` and in the `summary.md` of those later chapters,
-  because the next chapter's brief is built from them.
+  voice. When a fact's `claim` overstates its quote, narrow it with
+  `python3 tools/state.py fact <slug> <n> <F-id> --claim "<narrower claim>"`. Add missing
+  facts through `merge`. Then search every later chapter with status `done` for the same
+  mistake, and fix it there too. Also fix the mistake in `CD/summary.md` and in the
+  `summary.md` of those later chapters, because the next chapter's brief is built from them.
 - **Confusing:** rewrite only that passage so it is clear. Follow `style/STYLE.md`, and add
   a `.term` definition if a term was missing.
 - **Misunderstanding:** do not edit the chapter. Explain the point to the learner patiently,
