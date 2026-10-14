@@ -211,7 +211,7 @@ local function dot_figure(cb)
   -- Placeholder colors are swapped for theme colors by template.typ.
   local args = {
     "-Tsvg",
-    "-Gbgcolor=transparent", "-Gfontname=Inter", "-Gfontsize=10", "-Gfontcolor=#a1b2c3",
+    "-Gbgcolor=transparent", "-Gcolor=#a1b2c4", "-Gfontname=Inter", "-Gfontsize=10", "-Gfontcolor=#a1b2c3",
     "-Ncolor=#a1b2c3", "-Nfontcolor=#a1b2c3", "-Nfontname=Inter", "-Nfontsize=10",
     "-Ecolor=#a1b2c4", "-Efontcolor=#a1b2c3", "-Efontname=Inter", "-Efontsize=9",
     "-o", base .. ".svg", base .. ".gv",
