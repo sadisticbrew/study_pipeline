@@ -48,8 +48,29 @@ local function typ_str(s)
   return '"' .. s .. '"'
 end
 
+local function raw_b(s) return pandoc.RawBlock("typst", s) end
+local function raw_i(s) return pandoc.RawInline("typst", s) end
+
+-- Typst turns an apostrophe right after a digit into a prime, so "chapter 3's" would print
+-- as "3′s". Pandoc writes the curly apostrophe as a straight one, so pass it as raw Typst.
+local APOSTROPHE = "\u{2019}"
+local function digit_apostrophe(s)
+  if not s.text:find("%d" .. APOSTROPHE) then return nil end
+  local out, rest = pandoc.Inlines({}), s.text
+  while true do
+    local i, j = rest:find("%d" .. APOSTROPHE)
+    if not i then break end
+    out:insert(pandoc.Str(rest:sub(1, i)))
+    out:insert(raw_i(APOSTROPHE))
+    rest = rest:sub(j + 1)
+  end
+  if rest ~= "" then out:insert(pandoc.Str(rest)) end
+  return out
+end
+
 -- Inlines -> Typst markup (escaped by pandoc's own writer).
 local function inlines_typst(inls)
+  inls = inls:walk({ Str = digit_apostrophe })
   local out = pandoc.write(pandoc.Pandoc({ pandoc.Plain(inls) }), "typst")
   return (out:gsub("%s+$", ""))
 end
@@ -66,9 +87,6 @@ local function string_typst(s)
   end
   return inlines_typst(inls)
 end
-
-local function raw_b(s) return pandoc.RawBlock("typst", s) end
-local function raw_i(s) return pandoc.RawInline("typst", s) end
 
 ---------------------------------------------------------------------------
 -- Citations
@@ -238,8 +256,10 @@ local function code_block(cb)
   end
   local classes = {}
   if lang and kind ~= "output" then classes = { lang } end
+  local nlines = select(2, (text:gsub("\n+$", "")):gsub("\n", "")) + 1
   return {
-    raw_b(string.format("#code-frame(kind: %s, lang: %s)[", typ_str(kind), lang and typ_str(lang) or "none")),
+    raw_b(string.format("#code-frame(kind: %s, lang: %s, lines: %d)[", typ_str(kind),
+      lang and typ_str(lang) or "none", nlines)),
     pandoc.CodeBlock(text, pandoc.Attr("", classes)),
     raw_b("]"),
   }
@@ -346,7 +366,7 @@ function Pandoc(doc)
 
   number_cites(doc)
 
-  doc = doc:walk({ Inlines = inlines, Span = span })
+  doc = doc:walk({ Inlines = inlines, Span = span, Str = digit_apostrophe })
   doc = doc:walk({ CodeBlock = code_block, Div = div })
 
   if #source_order > 0 then

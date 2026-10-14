@@ -195,7 +195,10 @@
 }
 
 // ---------------------------------------------------------------- code
-#let code-frame(kind: "code", lang: none, body) = {
+// A block of at most this many lines stays on one page.
+#let keep-whole-lines = 12
+
+#let code-frame(kind: "code", lang: none, lines: 0, body) = {
   let (tag, tag-color, bg, stroke) = if kind == "output" {
     ("output", c.muted, c.output-bg, none)
   } else if kind == "sketch" {
@@ -203,17 +206,18 @@
   } else {
     (lang, c.muted, c.code-bg, none)
   }
-  let inset = (x: 9pt, top: 8pt, bottom: 8pt)
+  // The top inset leaves room for the tag above the first line, which can run full width.
+  let inset = (x: 9pt, top: 12pt, bottom: 8pt)
   let frame(width) = block(
     width: width,
     fill: bg,
     stroke: stroke,
     inset: inset,
     radius: 2pt,
-    breakable: true,
+    breakable: lines > keep-whole-lines,
     {
       if tag != none {
-        place(top + right, dx: 4pt, dy: -5pt, label-text(tag, color: tag-color, size: 6.5pt))
+        place(top + right, dx: 4pt, dy: -9pt, label-text(tag, color: tag-color, size: 6.5pt))
       }
       if kind == "output" {
         set text(fill: c.output-fg)
