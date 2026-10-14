@@ -28,7 +28,8 @@ tools in `tools/`.
 ## What to check
 
 Go through the chapter paragraph by paragraph, including asides, misconception blocks, term
-definitions, self-test questions, and answers. For every technical statement, decide:
+definitions, diagrams, self-test questions, and answers. For every technical statement,
+decide:
 
 - **supported**: a cited fact's verbatim quote really says this, at this strength.
 - **miscited**: the citation does not support it, but another fact does. Fix the citation.
@@ -56,6 +57,12 @@ Uncited sentences need the same care, and misconception and aside blocks are whe
 hide. Compare each uncited technical statement with the related facts in `FACTS`. A
 statement that contradicts a fact cited elsewhere in the chapter is **contradicted**, even
 if it carries no citation itself.
+
+A diagram's nodes, edges, labels, and caption are statements too. `claims.py` prints each
+one with its source. A diagram cannot cite, so judge it against the prose around it and the
+facts that prose cites. A detail that the prose does not state and support is
+**unsupported**, and one that disagrees with the prose or the facts is **contradicted**. Fix
+it in the `dot` source with the smallest change, or remove that detail.
 
 Common knowledge needs no citation. "A byte has eight bits" is fine. The behavior of a
 specific system, version, or algorithm is never common knowledge. Reasoning that the

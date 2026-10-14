@@ -3,10 +3,11 @@
 
 Usage: python3 tools/claims.py <chapter.md> [--facts F] [--sources S] [--uncited-only]
 
-Prints each paragraph (front matter, code and dot blocks skipped) with its line range, then
+Prints each paragraph (front matter and code blocks skipped) with its line range, then
 under it every cited fact: its verbatim quote, which is the evidence, then the scout's one-line
-summary, which is not. It also flags paragraphs that make no citation, and citations that
-point at missing facts. Built for the
+summary, which is not. Each dot diagram is printed with its caption and source, since a
+diagram cannot cite and must be judged against the prose around it. It also flags paragraphs
+that make no citation, and citations that point at missing facts. Built for the
 claim checker, so it can judge each paragraph against its evidence without cross-referencing
 facts.jsonl by hand. Fact and source paths resolve like tools/render.py: facts.jsonl next to
 the chapter, sources.jsonl next to it or two directories up.
@@ -61,6 +62,10 @@ def paragraphs(lines):
             inc = re.search(r'include="([^"]+)"', info)
             if inc:
                 yield s, i + 1, f"[code block including {inc.group(1)}]", "code"
+            elif re.search(r"\.dot\b", info):
+                cap = re.search(r'caption="([^"]*)"', info)
+                body = "\n".join(lines[s:i])
+                yield s, i + 1, f"diagram, caption: {cap.group(1) if cap else '(none)'}\n{body}", "code"
             i += 1
             continue
         stripped = line.strip()

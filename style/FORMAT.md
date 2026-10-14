@@ -111,13 +111,26 @@ A code block without `include` or `.sketch` is a format error.
 
 ## Diagrams
 
-Graphviz blocks render to vector images. Keep them small and label every node:
+Graphviz blocks render to vector images in both themes. When to draw one, and how it must
+relate to the prose around it, is in `style/STYLE.md`. Put the block right after the
+paragraph that leads into it:
 
 ````markdown
 ```{.dot caption="A follower times out and becomes a candidate."}
 digraph { rankdir=LR; Follower -> Candidate [label="timeout"]; }
 ```
 ````
+
+- `caption` is required: one plain sentence saying what the figure shows. Captions cannot
+  cite, so they hold no citations and no markup. The claims go in the prose beside the
+  figure, with their citations.
+- Label every node and every edge that carries meaning, using the names in the text. Keep a
+  figure small enough to take in at a glance. If it is not, show fewer steps or split it.
+- `rankdir=LR` suits flows and pipelines, and the default top-down layout suits trees. For
+  before-and-after snapshots of state, put each snapshot in its own labeled
+  `subgraph cluster_<name>`.
+- `tools/lint.py` runs Graphviz on every block, so a syntax error shows up as a `diagram`
+  finding.
 
 ## Tables
 

@@ -45,6 +45,10 @@ While writing:
 - Include lab code and output only with `include=`, and show only the lines that carry the
   idea (see the limits in `style/FORMAT.md`). Describe only what `run.out` shows.
 - Mark each new term at its first use, and check that it does not appear earlier.
+- Draw the diagrams the brief plans, following "Diagrams" in `style/STYLE.md`: write the
+  paragraph that leads into the figure, the `dot` block, then the text that points at what
+  to notice. Drop a planned figure if the prose turns out clearer without it, and add one
+  the brief did not plan only when the section passes the same test.
 - Respect the word budget per section. Running long in one section means cutting later.
 
 ## 3. Lint and fix

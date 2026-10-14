@@ -61,6 +61,30 @@ something true, and each one must say where it stops working. An analogy that br
 silently teaches a wrong model. If no analogy fits well, use none. A concrete example from
 the topic itself is often better.
 
+## Diagrams
+
+Draw a diagram when it shows something the reader would otherwise have to assemble in
+their head from several sentences: how parts relate (a tree, a graph, a pipeline), the
+steps of an algorithm, the path that execution or data takes, or how state changes over
+time. A good test is whether a careful reader following the prose would reach for paper to
+sketch it. If so, draw it for them. There is no target count. Many chapters need none, and
+a chapter built around an algorithm or a state machine may need several.
+
+A diagram complements the prose and never replaces it.
+
+- The prose teaches the idea completely on its own. A reader who skips the figure still
+  understands, and a reader who looks at it sees the same thing at a glance.
+- Lead into the figure from the paragraph before it, so the reader knows what they are
+  looking at. After it, point at what to notice: the edge that matters, the state that
+  changed. "As the diagram shows" never stands in for an explanation.
+- Draw from the running example, with the same names, values, and labels as the text.
+- Show one idea per figure. For a state change, show the states and the events between
+  them, or two or three snapshots of the running example before and after a step.
+- A diagram cannot cite, so it shows nothing the nearby prose does not say and support.
+  Every node, edge, and label is a claim, checked against the facts like any sentence.
+- Do not draw what one sentence says plainly, a list, a definition, a decorative overview,
+  or a picture of a code listing.
+
 ## New words
 
 The reader's biggest frustration with good books is a sudden word that sends them down a

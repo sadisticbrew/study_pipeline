@@ -32,6 +32,12 @@ chapters marked `known`, `topics/<slug>/glossary.jsonl`, `topics/<slug>/pitfalls
 3. **Opening situation.** A concrete scenario that makes the problem felt.
 4. **Sections.** For each, give a working title, the point it makes, a word budget (the
    budgets sum to the chapter's `words` range), and the source ids most likely to ground it.
+   When the point rests on a structure, the steps of an algorithm, a flow of execution or
+   data, or a sequence of state changes that the reader would otherwise have to hold in
+   their head, add a diagram plan: what the figure shows, drawn from the running example,
+   and what the prose around it must still explain (see "Diagrams" in `style/STYLE.md`).
+   Plan one only where it earns its place. There is no target count, and most sections
+   need none.
 5. **Running example.** One example to carry through the chapter.
 6. **New terms.** The terms this chapter introduces. Exclude glossary terms and anything
    the profile says the reader knows.
@@ -39,12 +45,12 @@ chapters marked `known`, `topics/<slug>/glossary.jsonl`, `topics/<slug>/pitfalls
 8. **Fact questions.** 12 to 25 precise questions whose answers the chapter will assert:
    rules, numbers, version-specific behavior, edge cases, history, and anything in
    `pitfalls.md` that touches this chapter. Every technical claim this brief makes itself,
-   in the opening, the section points and the misconceptions, needs a question unless the
-   chapter derives it step by step. Skip common knowledge. Group the questions into 3 to 5
-   batches of at most 6, by source area, and suggest source ids for each batch that a scout
-   can read: web pages, specs, source code, or books with a copy in `topics/<slug>/library/`
-   or a readable copy online. For history, suggest a readable secondary account rather than
-   the original paper.
+   in the opening, the section points, the diagram plans and the misconceptions, needs a
+   question unless the chapter derives it step by step. Skip common knowledge. Group the
+   questions into 3 to 5 batches of at most 6, by source area, and suggest source ids for
+   each batch that a scout can read: web pages, specs, source code, or books with a copy in
+   `topics/<slug>/library/` or a readable copy online. For history, suggest a readable
+   secondary account rather than the original paper.
 9. **Lab plan.** Following the topic's `lab` profile: for each lab, give a name, what it
    demonstrates, the runner, the expected result (`success` or `failure`), and what its
    output should make visible. Or write "no lab" with a reason.

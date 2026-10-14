@@ -7,7 +7,7 @@ Usage:
                         [--words MIN,MAX] [--no-context]
 
 Checks the conventions in style/FORMAT.md (front matter, crux/selftest/answers blocks,
-code includes and sketches, lab output freshness, citations, terms, acronyms, word
+code includes and sketches, diagrams, lab output freshness, citations, terms, acronyms, word
 budget) and the prose style rules configured in style/lint.toml.
 
 Context, unless overridden or --no-context is given: facts from <chapter dir>/facts.jsonl;
@@ -28,6 +28,8 @@ import bisect
 import json
 import os
 import re
+import shutil
+import subprocess
 import sys
 import tomllib
 from pathlib import Path
@@ -49,6 +51,7 @@ DEFAULT_SEVERITY = {
     "sketch-length": "error",
     "include": "error",
     "include-length": "error",
+    "diagram": "error",
     "code-total": "warning",
     "lab-output": "error",
     "citation": "error",
@@ -804,6 +807,7 @@ class Linter:
             while body and not body[-1].strip():
                 body.pop()
             if "dot" in classes:
+                self.diagram(cb, body, rng)
                 continue
             inc = kv.get("include")
             if inc is None and "sketch" not in classes:
@@ -848,6 +852,28 @@ class Linter:
         if total > max_total:
             self.add("code-total", first, f"the chapter shows {total} lines of included code "
                      f"(max {max_total}); trim the includes to the essential lines", None)
+
+    def diagram(self, cb, body, rng):
+        cap = (cb["kv"].get("caption") or "").strip()
+        if not cap:
+            self.add("diagram", cb["start"], "dot diagram has no caption; add caption=\"...\", "
+                     "one plain sentence saying what the figure shows", rng)
+        elif "[@" in cap:
+            self.add("diagram", cb["start"], "a caption cannot cite; state the claim with its "
+                     "citation in the prose beside the figure", rng)
+        dot = shutil.which("dot")
+        if not dot:
+            return  # render.py reports a missing Graphviz
+        try:
+            r = subprocess.run([dot, "-Tsvg", "-o", os.devnull], input="\n".join(body),
+                               capture_output=True, text=True, timeout=20)
+        except subprocess.TimeoutExpired:
+            self.add("diagram", cb["start"], "Graphviz needed more than 20 s for this diagram; "
+                     "simplify it", rng)
+            return
+        if r.returncode:
+            msg = " ".join(r.stderr.split()) or f"dot exited with status {r.returncode}"
+            self.add("diagram", cb["start"], f"Graphviz cannot render this diagram: {msg}", rng)
 
     def check_lines(self, cb, path, spec, inc):
         """Validate a lines= spec; return how many lines it shows, or None if invalid."""
