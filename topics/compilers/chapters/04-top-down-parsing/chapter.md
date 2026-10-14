@@ -82,7 +82,7 @@ T → T * F | T / F | F
 F → ( E ) | num | id
 ```
 
-An `E` is a chain of `T`s joined by `+` or `-`, and a `T` is a chain of `F`s joined by `*` or `/`. Without parentheses overriding the grouping, layering keeps multiplication below subtraction in the tree. Associativity comes from which side the recursion is on. In `E → E - T` the recursive `E` is on the left, so a chain of subtractions grows down the left side and `10 - 4 - 3` groups as `(10 - 4) - 3`. Putting the recursive `E` on the right instead, as in `E → T - E`, groups subtractions from the right.
+An `E` is a chain of `T`s joined by `+` or `-`, and a `T` is a chain of `F`s joined by `*` or `/`. A `*` can only be produced inside a `T`, and below a `T` the only way back to an `E` is through the parentheses in `F → ( E )`. So without parentheses a multiplication can never end up above a subtraction in the tree, and with them, as in `(10 - 4) * 3`, the subtraction sits inside the multiplication, which is exactly what the parentheses ask for. Associativity comes from which side the recursion is on. In `E → E - T` the recursive `E` is on the left, so a chain of subtractions grows down the left side and `10 - 4 - 3` groups as `(10 - 4) - 3`. Putting the recursive `E` on the right instead, as in `E → T - E`, groups subtractions from the right.
 
 The rule `E → E - T` has [left recursion]{.term def="A grammar rule whose right side begins with the same nonterminal it defines, directly or through other rules."}, and that is the trap from the opening. A naive [recursive-descent]{.term key="recursive descent" def="A top-down parser with one function per nonterminal, calling the functions for the symbols in its productions."} parser turns each nonterminal into a function, so `E` becomes a function whose first step is to parse an `E`. The `left-recursion` lab writes that function literally, next to the version that works.
 
@@ -202,7 +202,7 @@ Finally, does our parser agree with the real thing? The lab's `compare.go` runs 
 ```{.output include="lab/parser/run.out" lines="28-29"}
 ```
 
-Its tree matches the one on line 11 exactly.
+It builds the same tree that our parser printed for the running example.
 
 ::: tryit
 Run the lab with `python3 tools/lab.py run topics/compilers/chapters/04-top-down-parsing --only parser`. Then change the right-hand minimum in `expression` from `power + 1` to `power`, and before rerunning, predict the tree for `10 - 4 - 3 * 2` and its value. Afterwards, teach the lexer to accept `%`, add it at power 30, and check that `7 - 5 % 3` groups the way Go would.
