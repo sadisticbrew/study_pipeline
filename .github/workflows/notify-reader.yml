@@ -1,0 +1,13 @@
+name: notify reader
+on:
+  push:
+    branches: [main]
+    paths: ['topics/**']
+  workflow_dispatch:
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh api repos/sadisticbrew/study-reader/dispatches -f event_type=pipeline-updated
+        env:
+          GH_TOKEN: ${{ secrets.READER_DISPATCH_TOKEN }}
