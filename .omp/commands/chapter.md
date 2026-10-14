@@ -120,5 +120,5 @@ Report briefly:
   can put a copy (`topics/<slug>/library/<S-id>.pdf`, using the id `merge` gave it)
 - the total time, and the time per step
 
-Suggest `/quiz <n>` once the learner has read the chapter, and `/errata` if they find a
-mistake.
+Suggest `/quiz immediate <n>` once the learner has read the chapter, then `/quiz <n>` for
+tutoring, `/quiz delayed <n>` about a week later, and `/errata` if they find a mistake.

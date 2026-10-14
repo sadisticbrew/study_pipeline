@@ -15,6 +15,7 @@ and resume across sessions.
 | `/chapter [n] [slug]` | Brief, then fact scouts and lab builder in parallel, then one writer, a claim checker, lint, and render. |
 | `/bakeoff [n]` | Four writer models write the same excerpt blind. `/bakeoff pick <A-D>` reveals them and sets the writer. |
 | `/quiz [n]` | Tutor session with guiding questions. Records what is solid and what is shaky, and updates your profile's progress notes. |
+| `/quiz immediate\|delayed [n]` | Unaided test: two new questions per core idea, no hints, scored at the end. Results append to `topics/<slug>/assessments.jsonl`, and `tools/state.py assess` compares them over time. |
 | `/errata [n] <problem>` | Verifies a reported mistake, fixes the chapter and any later ones, and records the pitfall for future checks. |
 
 ## Models

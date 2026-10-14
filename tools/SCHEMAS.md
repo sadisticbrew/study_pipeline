@@ -18,6 +18,7 @@ topics/
     glossary.md                generated from glossary.jsonl
     pitfalls.md                errors found by /errata, read by future checks
     unreachable.jsonl          sources tools/fetch.py could not read (written only by fetch.py)
+    assessments.jsonl          append-only unaided test results (written only by state.py assess)
     library/                   the learner's own copies of books: <S-id>.pdf, .epub, ... (not in git)
     cache/                     text copies of fetched sources, made by tools/fetch.py (not in git)
     work/                      scratch for /topic scouts
@@ -116,6 +117,24 @@ A fact's `source` is either a local `key` from the same file or an existing `S` 
 
 `term` is the `key` attribute if present, else the marked text, lowercased unless it is an
 acronym or proper noun.
+
+## assessments.jsonl
+
+One line per unaided test from `/quiz immediate` or `/quiz delayed`, appended by
+`tools/state.py assess --record` and never rewritten:
+
+```json
+{"chapter": 3, "date": "2026-10-14", "kind": "immediate", "items": [{"concept": "Subset construction to a DFA, and DFA minimization", "question": "...", "score": 1}]}
+```
+
+- `kind` is `immediate` (right after reading, before tutoring) or `delayed` (days or weeks
+  later).
+- `concept` is verbatim one of the chapter's `core_ideas`, so tests with different
+  questions compare per core idea.
+- `score` is 0 (wrong or not known), 1 (right idea, a step missing or wrong) or 2 (right
+  and complete).
+- The record file passed to `--record` holds only `kind` and `items`. The tool adds
+  `chapter` and today's `date`.
 
 ## Labs
 

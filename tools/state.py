@@ -4,8 +4,9 @@
 Usage (paths are relative to the repo root; [slug] defaults to topics/.current):
   state.py init <slug> --title T        create topics/<slug>/ skeleton and make it current
   state.py current [slug]               print or set the active topic
-  state.py validate [slug]              check state.json, sources.jsonl, glossary.jsonl and
-                                        every chapter's facts.jsonl; exit 1 on problems
+  state.py validate [slug]              check state.json, sources.jsonl, glossary.jsonl,
+                                        assessments.jsonl and every chapter's facts.jsonl;
+                                        exit 1 on problems
   state.py roadmap [slug]               regenerate roadmap.md from state.json
   state.py chapter-dir [slug] <n>       create (if needed) and print the chapter directory
   state.py next [slug] [--json]         print the first pending/in_progress chapter; exit 1 if none
@@ -19,6 +20,11 @@ Usage (paths are relative to the repo root; [slug] defaults to topics/.current):
                                         overstates its quote (source, locator, quote never change)
   state.py glossary [slug] <n>          collect .term spans of chapter n into glossary.jsonl and
                                         regenerate glossary.md
+  state.py assess [slug] [n] [--record FILE]
+                                        print unaided test results: every chapter's totals, or
+                                        for chapter n the points per core idea and each question
+                                        asked so far; --record first appends the test in FILE,
+                                        {"kind": "immediate"|"delayed", "items": [...]}, dated today
   state.py status [slug]                short human summary
 
 Scout facts may carry an optional "key" (unique per file); it is reported with the new
@@ -53,6 +59,9 @@ SOURCE_FIELDS = ("title", "url", "kind", "version", "why")
 FACT_FIELDS = ("locator", "claim", "quote")
 QUOTE_WORDS_WARN = 75  # quotes should be at most about 60 words
 SETTABLE = ("status", "title", "words", "quiz")
+ASSESS_FILE = "assessments.jsonl"
+ASSESS_KEYS = ("chapter", "date", "kind", "items")
+ASSESS_KINDS = ("immediate", "delayed")
 MARKERS = {"done": "[done]", "known": "[known, skipped]", "in_progress": "[in progress]",
            "pending": "[pending]"}
 
@@ -445,6 +454,13 @@ def cmd_validate(a) -> int:
                 E.append(f"{where}: term {t!r} duplicates line {seen[t.lower()]}")
             else:
                 seen[t.lower()] = ln
+    # unaided test history
+    ap = tdir / ASSESS_FILE
+    by_n = {c["n"]: c for c in state.get("chapters") or [] if isinstance(c, dict) and is_int(c.get("n"))}
+    for ln, rec in read_jsonl(ap, E):
+        e, w = check_assessment(rec, f"{rel(ap)}:{ln}", by_n)
+        E += e
+        W += w
     # chapters
     chapters = [c for c in state.get("chapters") or [] if isinstance(c, dict)
                 and is_int(c.get("n")) and isinstance(c.get("slug"), str)]
@@ -900,6 +916,142 @@ def cmd_fact(a) -> int:
     raise Fail(f"no fact {a.fid} in {rel(fp)}")
 
 
+# ---------------------------------------------------------------- assessments
+def check_assessment(rec, where, chapters, strict=False):
+    """(errors, warnings) for one assessments.jsonl record; chapters maps n to its state entry.
+    A concept that is not verbatim one of the chapter's core ideas is an error when strict
+    (recording), else a warning, since core ideas may have been reworded since."""
+    E, W = [], []
+    extra = sorted(set(rec) - set(ASSESS_KEYS))
+    if extra:
+        E.append(f"{where}: unknown key(s) {', '.join(extra)} (allowed: {', '.join(ASSESS_KEYS)})")
+    if not is_int(rec.get("chapter")):
+        E.append(f"{where}: chapter must be a chapter number")
+    if not valid_date(rec.get("date")):
+        E.append(f"{where}: date must be a YYYY-MM-DD date, got {rec.get('date')!r}")
+    if rec.get("kind") not in ASSESS_KINDS:
+        E.append(f"{where}: kind must be immediate or delayed, got {rec.get('kind')!r}")
+    items = rec.get("items")
+    if not isinstance(items, list) or not items:
+        E.append(f'{where}: items must be a non-empty list of {{"concept", "question", "score"}}')
+        return E, W
+    ch = chapters.get(rec.get("chapter"))
+    if ch is None and is_int(rec.get("chapter")):
+        E.append(f"{where}: no chapter {rec['chapter']} in state.json")
+    ideas = (ch or {}).get("core_ideas") or []
+    for i, it in enumerate(items, 1):
+        w = f"{where}: items[{i}]"
+        if not isinstance(it, dict) or set(it) != {"concept", "question", "score"}:
+            E.append(f"{w} must be an object with exactly concept, question and score")
+            continue
+        if not is_str(it["question"]):
+            E.append(f"{w}.question must be a non-empty string")
+        if not is_int(it["score"]) or it["score"] not in (0, 1, 2):
+            E.append(f"{w}.score must be 0, 1 or 2, got {it['score']!r}")
+        if not is_str(it["concept"]):
+            E.append(f"{w}.concept must be a non-empty string")
+        elif ch is not None and it["concept"] not in ideas:
+            (E if strict else W).append(f"{w}.concept is not verbatim one of chapter {ch['n']}'s "
+                                        f"core ideas: {it['concept']!r}")
+    return E, W
+
+
+def record_test(chapters, ch, src: Path, path: Path):
+    if ch.get("status") != "done":
+        raise Fail(f"chapter {ch['n']} is {ch.get('status')}; only a done chapter can be tested")
+    try:
+        data = json.loads(src.read_text(encoding="utf-8"))
+    except OSError as e:
+        raise Fail(f"cannot read {src}: {e.strerror}")
+    except json.JSONDecodeError as e:
+        raise Fail(f"{src} is not valid JSON ({e.msg} at line {e.lineno})")
+    if not isinstance(data, dict) or set(data) - {"kind", "items"}:
+        raise Fail(f'{src} must hold only {{"kind": ..., "items": [...]}}; chapter and date are added')
+    rec = {"chapter": ch["n"], "date": today(), "kind": data.get("kind"), "items": data.get("items")}
+    E, _ = check_assessment(rec, rel(src), chapters, strict=True)
+    if E:
+        ideas = "\n".join(f"    {c}" for c in ch.get("core_ideas") or [])
+        raise Fail("\n  ".join(E) + f"\n  core ideas of chapter {ch['n']}:\n{ideas}")
+    append_lines(path, [rec])
+    asked = {it["concept"] for it in rec["items"]}
+    for c in ch.get("core_ideas") or []:
+        if c not in asked:
+            print(f"warning: no question tested the core idea: {c}")
+    print(f"recorded the {rec['kind']} test of chapter {ch['n']} in {rel(path)}\n")
+
+
+def test_total(items) -> str:
+    got, top = sum(it["score"] for it in items), 2 * len(items)
+    return f"{got}/{top} ({round(100 * got / top)}%)"
+
+
+def test_day(rec, first) -> int:
+    return (datetime.date.fromisoformat(rec["date"]) - first).days
+
+
+def print_chapter_tests(ch, recs):
+    core = ch.get("core_ideas") or []
+    ideas = list(core)
+    for r in recs:
+        ideas += [it["concept"] for it in r["items"] if it["concept"] not in ideas]
+    print(f"chapter {ch['n']}: {ch.get('title', '')}")
+    print("core ideas:")
+    for i, c in enumerate(ideas, 1):
+        print(f"  {i}. {c}" + ("" if c in core else "  (no longer a core idea)"))
+    if not recs:
+        print("no tests yet")
+        return
+    first = min(datetime.date.fromisoformat(r["date"]) for r in recs)
+    print("\ntests (points per core idea, 0 to 2 per question; day counts from the first test):")
+    for k, r in enumerate(recs, 1):
+        cols = []
+        for i, c in enumerate(ideas, 1):
+            its = [it for it in r["items"] if it["concept"] == c]
+            got = sum(it["score"] for it in its)
+            cols.append(f"{i}: {got}/{2 * len(its)}" if its else f"{i}: -")
+        print(f"  #{k} {r['date']} {r['kind']:<9} day {test_day(r, first):>3}   "
+              f"{'   '.join(cols)}   total {test_total(r['items'])}")
+    print("\nquestions asked so far (new tests must not reuse them):")
+    for k, r in enumerate(recs, 1):
+        for it in r["items"]:
+            print(f"  #{k} idea {ideas.index(it['concept']) + 1}, {it['score']}/2: {it['question']}")
+
+
+def cmd_assess(a) -> int:
+    tdir = topic_dir(a.slug)
+    state = load_state(tdir)
+    chapters = {c["n"]: c for c in state.get("chapters") or [] if isinstance(c, dict) and is_int(c.get("n"))}
+    path = tdir / ASSESS_FILE
+    if a.record:
+        if a.n is None:
+            raise Fail("usage: state.py assess [slug] <n> --record FILE")
+        record_test(chapters, get_chapter(state, a.n), Path(a.record), path)
+    problems, recs = [], []
+    for ln, rec in read_jsonl(path, problems):
+        if rec.get("chapter") != a.n and a.n is not None:
+            continue
+        e, _ = check_assessment(rec, f"{rel(path)}:{ln}", chapters)
+        problems += e
+        if not e:
+            recs.append(rec)
+    for p in problems:
+        print(f"warning: skipped {p}")
+    if a.n is not None:
+        print_chapter_tests(get_chapter(state, a.n), recs)
+        return 0
+    if not recs:
+        print(f"no tests recorded yet in {rel(path)}")
+        return 0
+    print(f"tests in {rel(path)} (day counts from each chapter's first test):")
+    for n in sorted({r["chapter"] for r in recs}):
+        rs = [r for r in recs if r["chapter"] == n]
+        first = min(datetime.date.fromisoformat(r["date"]) for r in rs)
+        print(f"  chapter {n}: {chapters[n].get('title', '')}")
+        for r in rs:
+            print(f"    {r['date']} {r['kind']:<9} day {test_day(r, first):>3}   {test_total(r['items'])}")
+    return 0
+
+
 # ---------------------------------------------------------------- glossary
 def stringify(node) -> str:
     if isinstance(node, list):
@@ -1096,6 +1248,9 @@ def build_parser(cmd):
     elif cmd == "fact":
         p.add_argument("args", nargs="+", metavar="[slug] n F-id")
         p.add_argument("--claim", required=True, help="the new one-sentence claim")
+    elif cmd == "assess":
+        p.add_argument("args", nargs="*", metavar="[slug] [n]")
+        p.add_argument("--record", metavar="FILE", help="append the test in FILE before printing")
     else:
         return None
     return p
@@ -1103,7 +1258,7 @@ def build_parser(cmd):
 
 COMMANDS = {"init": cmd_init, "current": cmd_current, "validate": cmd_validate, "roadmap": cmd_roadmap,
             "chapter-dir": cmd_chapter_dir, "next": cmd_next, "set": cmd_set, "merge": cmd_merge,
-            "fact": cmd_fact, "glossary": cmd_glossary, "status": cmd_status}
+            "fact": cmd_fact, "glossary": cmd_glossary, "assess": cmd_assess, "status": cmd_status}
 
 
 def main(argv=None) -> int:
@@ -1136,6 +1291,11 @@ def main(argv=None) -> int:
             if len(rest) != 2 or id_num(FID_RE, rest[1]) is None:
                 raise Fail("usage: state.py fact [slug] <n> <F-id> --claim TEXT")
             a.n, a.fid = parse_n(rest[0]), rest[1]
+        elif cmd == "assess":
+            a.slug, rest = split_slug(a.args, 0, looks_int)
+            if len(rest) > 1:
+                raise Fail("usage: state.py assess [slug] [n] [--record FILE]")
+            a.n = parse_n(rest[0]) if rest else None
         return COMMANDS[cmd](a)
     except Fail as e:
         print(f"error: {e}", file=sys.stderr)

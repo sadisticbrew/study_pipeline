@@ -23,7 +23,7 @@ This repository is a personal textbook generator for one learner, described in
 
 - Use the tools in `tools/` for state changes they cover, instead of hand-editing generated
   files (`roadmap.md`, `glossary.md`, `glossary.jsonl`, `unreachable.jsonl`, `run.out`,
-  `run.status.json`).
+  `run.status.json`) or the append-only `assessments.jsonl`.
 - Never invent sources, quotes, citations, or program output. A missing fact is better than
   a wrong one.
 - Never use sudo on the host. Kernel-level labs run in the `vng` runner.
