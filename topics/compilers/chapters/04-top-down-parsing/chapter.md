@@ -66,6 +66,29 @@ The `grammar-lab` answers by brute force. It tries every way of splitting the to
 
 There are five trees, and they produce five different numbers. Only the third one, `((10 - 4) - (3 * 2)) = 0`, is what a Go or C programmer means [@F13; @F14; @F51]. A grammar like this is an [ambiguous grammar]{.term def="A grammar under which some sentence has more than one parse tree, or equivalently more than one leftmost derivation."}: some sentence in its language has more than one parse tree, which is the same as having more than one leftmost derivation [@F6]. Here the trees give different meanings, and the grammar alone does not tell a compiler which one to pick.
 
+Drawing two of them makes the difference visible. Each `E` hangs underneath it the symbols of the production that rewrote it, and each leaf is a `num` token, written as its value. The left tree is the one the leftmost derivation above records. A tree is evaluated from the leaves up, so the operator at the root is the one applied last. In the tree worth 0 that is the second `-`, and in the tree worth 6 it is the `*`.
+
+```{.dot caption="Two parse trees for 10 - 4 - 3 * 2 under the ambiguous grammar. Left, the third tree, worth 0. Right, the fifth tree, worth 6."}
+digraph {
+  node [shape=plaintext, width=0.2, height=0.2]; edge [arrowhead=none]; ordering=out; nodesep=0.12; ranksep=0.2;
+  a [label="E"]; a1 [label="E"]; a2 [label="-"]; a3 [label="E"];
+  a -> a1; a -> a2; a -> a3;
+  a11 [label="E"]; a12 [label="-"]; a13 [label="E"];
+  a1 -> a11; a1 -> a12; a1 -> a13;
+  a11n [label="10"]; a11 -> a11n; a13n [label="4"]; a13 -> a13n;
+  a31 [label="E"]; a32 [label="*"]; a33 [label="E"];
+  a3 -> a31; a3 -> a32; a3 -> a33;
+  a31n [label="3"]; a31 -> a31n; a33n [label="2"]; a33 -> a33n;
+  b [label="E"]; b1 [label="E"]; b2 [label="*"]; b3 [label="E"];
+  b -> b1; b -> b2; b -> b3; b3n [label="2"]; b3 -> b3n;
+  b11 [label="E"]; b12 [label="-"]; b13 [label="E"];
+  b1 -> b11; b1 -> b12; b1 -> b13; b13n [label="3"]; b13 -> b13n;
+  b111 [label="E"]; b112 [label="-"]; b113 [label="E"];
+  b11 -> b111; b11 -> b112; b11 -> b113;
+  b111n [label="10"]; b111 -> b111n; b113n [label="4"]; b113 -> b113n;
+}
+```
+
 Notice that the problem lives in the grammar and not in the set of strings it accepts. Usually an unambiguous grammar exists for the same language, although a few languages are inherently ambiguous and admit no such grammar [@F8]. You might hope a tool could check a grammar and warn you, but no general check exists. Deciding whether an arbitrary context-free grammar is ambiguous is undecidable, because an algorithm for it would also solve the Post correspondence problem [@F7]. Language designers therefore avoid ambiguity by construction, using grammar shapes they know to be safe.
 
 The classic statement-level example is the [dangling else]{.term def="The ambiguity in if c1 if c2 s1 else s2 about which if the else belongs to."}. In C, `if (a) if (b) s1; else s2;` could attach the `else` to either `if`. C settles it with a sentence in the standard rather than in the grammar: an `else` belongs to the lexically nearest preceding `if` that the syntax allows [@F15]. Engineering a Compiler shows that you can also push this rule into the grammar itself, rewriting it so that it accepts the same sentences but forces each `else` onto the innermost unmatched `if` [@F16]. Go sidesteps the whole question. Its `if` body is a `Block` [@F17], and a block is written between matching braces [@F18], so in the chapter 3 line `if x1 <= 10 { y = x1 * 2 }` the closing brace already says where the inner statement ends, and an `else` that follows it has only one `if` to belong to.
