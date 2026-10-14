@@ -42,9 +42,32 @@ One answer is to compare `n` with 1, jump to the "return 1" code if less or equa
 
 That leaves `call` and `ret`, the two instructions that make functions possible at the hardware level. `call` pushes the address of the instruction after itself onto the stack and then jumps to the target [@F9]. `ret` pops that saved address off the stack into the instruction pointer and carries on from there [@F10]. These ordinary near-call and return instructions do not pass arguments, save general-purpose registers, or reserve space for locals. Everything beyond remembering where to come back to is left to software.
 
+Follow one call through two pieces of state. Before it, `%rip` points at `call fact`. The `call` pushes the address of the next instruction and jumps, so on entry to `fact` that address is the top of the stack [@F9; @F23]. When `fact` finishes, `ret` pops it into `%rip` and the caller carries on [@F10].
+
+```{.dot caption="One call and its return, as seen in the instruction pointer and the top of the stack."}
+digraph { node [shape=plaintext]; ranksep=0.3;
+  a [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+    <TR><TD COLSPAN="2" BORDER="0">before the call</TD></TR>
+    <TR><TD>%rip</TD><TD>call fact</TD></TR>
+    <TR><TD>top of stack</TD><TD>caller's data</TD></TR></TABLE>>];
+  b [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+    <TR><TD COLSPAN="2" BORDER="0">on entry to fact</TD></TR>
+    <TR><TD>%rip</TD><TD>first instruction of fact</TD></TR>
+    <TR><TD>top of stack</TD><TD>return address</TD></TR></TABLE>>];
+  c [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+    <TR><TD COLSPAN="2" BORDER="0">after the return</TD></TR>
+    <TR><TD>%rip</TD><TD>instruction after the call</TD></TR>
+    <TR><TD>top of stack</TD><TD>caller's data</TD></TR></TABLE>>];
+  a -> b [label="  call pushes the address of the next instruction, then jumps"];
+  b -> c [label="  fact runs, then ret pops that address into %rip"];
+}
+```
+
+Nothing else connects a call to its return. `ret` takes whatever is on top of the stack, so `fact` must leave `%rsp` pointing at the return address by the time it returns.
+
 ## The stack, and a frame for every call
 
-The [machine stack]{.term def="A region of ordinary memory that functions use for return addresses, saved registers and local variables, growing and shrinking as calls happen."} is not special hardware. It is ordinary memory, and the only thing that makes it a stack is the [stack pointer]{.term def="The register %rsp, which holds the address of the current top of the machine stack."}, `%rsp`, which points at its top. The stack grows toward lower addresses. As you learned with `exprc`, `pushq` moves `%rsp` down by 8 and stores, and `popq` loads and moves it back up. Since `call` pushes, the value it pushes, the return address, is an 8-byte slot sitting right at the top of the stack when a function starts in 64-bit mode [@F45; @F46].
+The [machine stack]{.term def="A region of ordinary memory that functions use for return addresses, saved registers and local variables, growing and shrinking as calls happen."} is not special hardware. It is ordinary memory, and the only thing that makes it a stack is the [stack pointer]{.term def="The register %rsp, which holds the address of the current top of the machine stack."}, `%rsp`, which points at its top. The stack grows toward lower addresses [@F61]. As you learned with `exprc`, `pushq` moves `%rsp` down by 8 and stores, and `popq` loads and moves it back up. Since `call` pushes, the value it pushes, the return address, is an 8-byte slot sitting right at the top of the stack when a function starts in 64-bit mode [@F45; @F46].
 
 The interesting part is the stack below that return address, and `fact` shows why a function needs it. Its `n` arrives in a register and has to survive the recursive call, but the recursive call will put its own `n` in that same register. In this unoptimized code, the value goes to memory, somewhere the inner call will not reuse. So each call claims a fresh block of stack below whatever its caller was using, called the function's [stack frame]{.term def="The block of stack memory one function call owns, holding its saved registers and local variables."}, and each activation gets its own copy of `n`. Your Go interpreter's recursive `eval` got this for free, because the Go compiler built a frame for every call to `eval`. Here you see what that costs.
 
@@ -61,6 +84,35 @@ The body is the compare and jump from the last section. `cmpq $1, -8(%rbp)` comp
 
 The last two instructions are the [epilogue]{.term def="The instructions at the end of a function that tear down its stack frame and return."}. `leave` copies the frame pointer into the stack pointer, which releases the frame, and then pops the saved `%rbp` back [@F15]. In 64-bit mode it works on the full 64-bit registers by default [@F16]. `ret` then returns to the caller.
 
+On entry, `%rsp` points at the return address and `%rbp` still holds the caller's value. The first two instructions save that value below the return address and point `%rbp` at the saved copy. `subq` then moves `%rsp` down 16 bytes, and `n` goes in the upper of the two new slots, leaving the lower one unused.
+
+```{.dot caption="The prologue of fact read downward and its epilogue read upward, with higher addresses at the top."}
+digraph { node [shape=plaintext]; ranksep=0.35;
+  s1 [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+    <TR><TD COLSPAN="3" BORDER="0">on entry, %rbp still the caller's</TD></TR>
+    <TR><TD BORDER="0" WIDTH="58"></TD><TD WIDTH="110">caller's frame</TD><TD BORDER="0" WIDTH="80"></TD></TR>
+    <TR><TD BORDER="0"></TD><TD>return address</TD><TD BORDER="0" ALIGN="LEFT">← %rsp</TD></TR></TABLE>>];
+  s2 [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+    <TR><TD COLSPAN="3" BORDER="0">after the first two instructions</TD></TR>
+    <TR><TD BORDER="0" WIDTH="58"></TD><TD WIDTH="110">caller's frame</TD><TD BORDER="0" WIDTH="80"></TD></TR>
+    <TR><TD BORDER="0"></TD><TD>return address</TD><TD BORDER="0"></TD></TR>
+    <TR><TD BORDER="0"></TD><TD>saved %rbp</TD><TD BORDER="0" ALIGN="LEFT">← %rsp, %rbp</TD></TR></TABLE>>];
+  s3 [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+    <TR><TD COLSPAN="3" BORDER="0">after subq and the store of n</TD></TR>
+    <TR><TD BORDER="0" WIDTH="58"></TD><TD WIDTH="110">caller's frame</TD><TD BORDER="0" WIDTH="80"></TD></TR>
+    <TR><TD BORDER="0" ALIGN="RIGHT">8(%rbp)</TD><TD>return address</TD><TD BORDER="0"></TD></TR>
+    <TR><TD BORDER="0" ALIGN="RIGHT">0(%rbp)</TD><TD>saved %rbp</TD><TD BORDER="0" ALIGN="LEFT">← %rbp</TD></TR>
+    <TR><TD BORDER="0" ALIGN="RIGHT">-8(%rbp)</TD><TD>n</TD><TD BORDER="0"></TD></TR>
+    <TR><TD BORDER="0" ALIGN="RIGHT">-16(%rbp)</TD><TD>unused</TD><TD BORDER="0" ALIGN="LEFT">← %rsp</TD></TR></TABLE>>];
+  s1:sw -> s2:nw [label="pushq %rbp\lmovq %rsp, %rbp\l"];
+  s2:sw -> s3:nw [label="subq $16, %rsp\lmovq %rdi, -8(%rbp)\l"];
+  s3:ne -> s2:se [label="leave, part 1:\lcopy %rbp to %rsp\l"];
+  s2:ne -> s1:se [label="leave, part 2:\lpop %rbp\l"];
+}
+```
+
+Read upward, the same snapshots are the epilogue. The first half of `leave` discards the locals by moving `%rsp` up to `%rbp`, and the second half pops the caller's `%rbp`, leaving `%rsp` on the return address for `ret`. The offsets on the left are the standard System V layout, with the return address at `8(%rbp)` and the caller's `%rbp` at `0(%rbp)` [@F62]. Every slot keeps a fixed offset from `%rbp`, however `%rsp` moves.
+
 ### Watching five frames
 
 The frames lab runs `fact(5)` under gdb with a breakpoint on `fact`, and at each entry it prints how far this activation's `&n` sits from the first one.
@@ -68,16 +120,33 @@ The frames lab runs `fact(5)` under gdb with a breakpoint on `fact`, and at each
 ```{.output include="lab/frames/run.out" lines="53-58"}
 ```
 
-Five activations, five different addresses, each 32 bytes below the last. Count what each call adds and the spacing explains itself. `subq $16` reserves 16 bytes and the saved `%rbp` takes 8, and the remaining 8 bytes of the 32 are the return address that `call` pushed [@F46]. Since `fact` makes no other pushes, every frame is the same size, so the addresses step down evenly.
+Five activations, five different addresses, each 32 bytes below the last. Count what each call adds and the spacing explains itself. `subq $16` reserves 16 bytes and the saved `%rbp` takes 8, and the remaining 8 bytes of the 32 are the return address that `call` pushed [@F46]. Since `fact` makes no other pushes, every frame is the same size, so the addresses step down evenly. Here are the first three of those frames while `fact(3)` runs.
 
-```{.dot caption="The stack while fact(3) runs, higher addresses at the top."}
-digraph { rankdir=TB; node [shape=box];
-  a [label="fact(5) frame: ret addr, saved rbp, n=5"];
-  b [label="fact(4) frame: ret addr, saved rbp, n=4"];
-  c [label="fact(3) frame: ret addr, saved rbp <- rbp, n=3"];
-  d [label="rsp points at bottom of fact(3) frame"];
-  a -> b -> c -> d; }
+```{.dot caption="The stack while fact(3) runs, with one 32-byte frame per activation and higher addresses at the top."}
+digraph { node [shape=plaintext];
+  t [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="2">
+    <TR><TD></TD><TD><TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
+      <TR><TD WIDTH="160">main's frame</TD><TD BORDER="0" WIDTH="50"></TD></TR></TABLE></TD></TR>
+    <TR><TD ALIGN="RIGHT">fact(5),<BR/>32 bytes</TD><TD><TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
+      <TR><TD WIDTH="160">return address into main</TD><TD BORDER="0" WIDTH="50"></TD></TR>
+      <TR><TD>saved %rbp: main's</TD><TD BORDER="0"></TD></TR>
+      <TR><TD>n = 5</TD><TD BORDER="0"></TD></TR>
+      <TR><TD>unused</TD><TD BORDER="0"></TD></TR></TABLE></TD></TR>
+    <TR><TD ALIGN="RIGHT">fact(4),<BR/>32 bytes</TD><TD><TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
+      <TR><TD WIDTH="160">return address: imulq in fact</TD><TD BORDER="0" WIDTH="50"></TD></TR>
+      <TR><TD>saved %rbp: fact(5)'s</TD><TD BORDER="0"></TD></TR>
+      <TR><TD>n = 4</TD><TD BORDER="0"></TD></TR>
+      <TR><TD>unused</TD><TD BORDER="0"></TD></TR></TABLE></TD></TR>
+    <TR><TD ALIGN="RIGHT">fact(3),<BR/>32 bytes</TD><TD><TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
+      <TR><TD WIDTH="160">return address: imulq in fact</TD><TD BORDER="0" WIDTH="50"></TD></TR>
+      <TR><TD>saved %rbp: fact(4)'s</TD><TD BORDER="0" ALIGN="LEFT">← %rbp</TD></TR>
+      <TR><TD>n = 3</TD><TD BORDER="0"></TD></TR>
+      <TR><TD>unused</TD><TD BORDER="0" ALIGN="LEFT">← %rsp</TD></TR></TABLE></TD></TR>
+  </TABLE>>];
+}
 ```
+
+Look at the return addresses. The ones in the `fact(4)` and `fact(3)` frames are the same address, the `imulq` right after `call fact`, because both were pushed by that one instruction [@F9]. What keeps the activations apart is the chain of saved `%rbp` values. When `fact(3)` returns, its `leave` restores `fact(4)`'s frame pointer [@F15], so the `imulq` that runs next reads `fact(4)`'s `n` from `-8(%rbp)`.
 
 ::: {.aside title="The red zone"}
 System V reserves the 128 bytes just below `%rsp` and forbids signal and interrupt handlers from modifying them [@F24]. A function may keep temporary data there that is not needed across calls, and a leaf function, one that calls nothing, may use it as its entire frame without moving `%rsp` at all [@F25]. This is called the [red zone]{.term def="The 128 bytes below %rsp that System V guarantees no signal handler will overwrite, usable by a function as scratch space."}. `fact` calls itself, so it cannot use it for `n`.
