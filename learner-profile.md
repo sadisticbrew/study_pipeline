@@ -23,3 +23,7 @@
 - Flowing, plain prose.
 - **Avoid:** runs of short punchy sentences, content stuffed into parentheses, heavy semicolon use.
 - No walls of text: structured, with the main point first.
+
+## Progress
+
+- **Compilers:** reinforce Lattner's M × N argument (a shared IR means M + N pieces: one front end per language, one back end per target) and that clang's LLVM IR is not target-neutral. Not yet quizzed from ch. 1: the idivq → #DE → SIGFPE chain, assembler/linker/driver boundaries, bootstrapping and trusting trust.

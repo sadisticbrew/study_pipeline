@@ -96,7 +96,19 @@
         3500
       ],
       "status": "done",
-      "quiz": null
+      "quiz": {
+        "date": "2026-10-14",
+        "solid": [
+          "interpreter vs compiler (evaluate now vs emit instructions for later)",
+          "compiler correctness as preserving required behavior, including C undefined behavior",
+          "AOT / bytecode+VM / JIT spectrum; compiled vs interpreted describes an implementation",
+          "stack-machine code generation and operand order (right operand on top)"
+        ],
+        "shaky": [
+          "Lattner M x N argument: counting front ends + back ends (M+N) with a shared IR",
+          "clang LLVM IR is not target-neutral (data layout, triple, CPU attributes)"
+        ]
+      }
     },
     {
       "n": 2,
