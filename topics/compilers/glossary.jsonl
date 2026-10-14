@@ -61,3 +61,29 @@
 {"term": "DFA minimization", "def": "Merging the states of a DFA that no input string can tell apart, giving the smallest equivalent DFA.", "chapter": 3}
 {"term": "lexer generator", "def": "A tool that reads token rules written as regular expressions with actions and writes the source code of a lexer.", "chapter": 3}
 {"term": "zero extension", "def": "Widening a value to more bits by filling the new high bits with zeros.", "chapter": 2}
+{"term": "context-free grammar", "def": "A set of rewriting rules, each replacing one named syntactic category by a sequence of tokens and categories, that together describe a language.", "chapter": 4}
+{"term": "terminal", "def": "The symbols a grammar cannot rewrite further, which for a parser are token kinds.", "chapter": 4}
+{"term": "nonterminal", "def": "A named syntactic category in a grammar, such as Expr, that rules rewrite into other symbols.", "chapter": 4}
+{"term": "production", "def": "One grammar rule, written A → β, saying that the nonterminal A may be replaced by the sequence β.", "chapter": 4}
+{"term": "start symbol", "def": "The nonterminal that every derivation of a whole program begins from.", "chapter": 4}
+{"term": "derivation", "def": "A sequence of rewriting steps that begins with the start symbol and ends with a string of terminals.", "chapter": 4}
+{"term": "leftmost derivation", "def": "A derivation that rewrites the leftmost nonterminal at every step.", "chapter": 4}
+{"term": "parse tree", "def": "A tree that records which production rewrote each nonterminal in a derivation, with the order of the steps forgotten.", "chapter": 4}
+{"term": "ALGOL", "def": "Short for ALGOrithmic Language.", "chapter": 4}
+{"term": "BNF", "def": "Backus normal form, later Backus-Naur form, a text notation for writing context-free grammars.", "chapter": 4}
+{"term": "EBNF", "def": "Extended BNF, which adds grouping, optional parts and repetition to plain BNF.", "chapter": 4}
+{"term": "ambiguous grammar", "def": "A grammar under which some sentence has more than one parse tree, or equivalently more than one leftmost derivation.", "chapter": 4}
+{"term": "dangling else", "def": "The ambiguity in if c1 if c2 s1 else s2 about which if the else belongs to.", "chapter": 4}
+{"term": "precedence", "def": "The rule that decides which of two different operators groups first, such as multiplication before subtraction.", "chapter": 4}
+{"term": "associativity", "def": "The rule that decides how repeated operators of equal precedence group, either from the left or from the right.", "chapter": 4}
+{"term": "left recursion", "def": "A grammar rule whose right side begins with the same nonterminal it defines, directly or through other rules.", "chapter": 4}
+{"term": "recursive descent", "def": "A top-down parser with one function per nonterminal, calling the functions for the symbols in its productions.", "chapter": 4}
+{"term": "predictive parsing", "def": "Top-down parsing that chooses each production by looking at upcoming tokens, without ever backtracking.", "chapter": 4}
+{"term": "FIRST set", "def": "The set of terminals that can appear as the first token of some string derived from a symbol or sequence of symbols.", "chapter": 4}
+{"term": "nullable", "def": "Able to derive the empty sequence, so that it can match no tokens at all.", "chapter": 4}
+{"term": "FOLLOW set", "def": "The set of terminals, plus end of input, that can appear immediately after a string derived from a nonterminal.", "chapter": 4}
+{"term": "LL(1)", "def": "A grammar that a parser can handle predictively, reading left to right, building a leftmost derivation, with one token of lookahead.", "chapter": 4}
+{"term": "left factoring", "def": "Rewriting productions that share a common prefix so the prefix is matched once and a new nonterminal chooses among the different endings.", "chapter": 4}
+{"term": "binding power", "def": "A number attached to an operator saying how tightly it holds its operands, with higher numbers grouping first.", "chapter": 4}
+{"term": "pratt parsing", "def": "Expression parsing guided by binding powers, with token-specific behavior for starting and continuing expressions.", "chapter": 4}
+{"term": "precedence climbing", "def": "Theodore Norvell's name for an expression-parsing loop driven by operator precedence and a minimum, later shown to be Pratt parsing.", "chapter": 4}

@@ -1,0 +1,29 @@
+== Go ==
+go version go1.27.1-X:nodwarf5 linux/amd64
+== Pratt trace: 10 - 4 - 3 * 2 ==
+op=- bp=20 min=0 absorb
+op=- bp=20 min=21 return
+op=- bp=20 min=0 absorb
+op=* bp=30 min=21 absorb
+tree = (- (- 10 4) (* 3 2))
+
+== Expression trees ==
+10 - 4 - 3 * 2 => (- (- 10 4) (* 3 2))
+-2 * 3 => (* (neg 2) 3)
+a < b == c => (== (< a b) c)
+f(1, 2 + 3) * 4 => (* (call f 1 (+ 2 3)) 4)
+
+== Statement trees ==
+if x1 <= 10 { y = x1 * 2 } => (program (if (<= x1 10) (block (= y (* x1 2)))))
+func choose(x, y) { if x < y { return x } else { return y } } => (program (func choose (params x y) (block (if (< x y) (block (return x)) (block (return y))))))
+
+== Remaining operators and statement forms ==
+a != b > c >= d <= e / (f + g) => (<= (>= (> (!= a b) c) d) (/ e (+ f g)))
+var x; var y = 2; x = y; f(x); { return; } => (program (var x) (var y 2) (= x y) (expr (call f x)) (block return))
+
+== Positioned parse errors ==
+x = (1 + 2 => 1:11: expected ), got EOF ""
+if x { y = } => 1:12: expected expression (integer, identifier, '-', or '('), got } "}"
+
+== go/parser.ParseExpr ==
+tree = (- (- 10 4) (* 3 2))

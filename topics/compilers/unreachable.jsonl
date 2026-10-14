@@ -1,0 +1,2 @@
+{"url": "https://www.gnu.org/software/bison/manual/bison.html", "reason": "timed-out", "kind": "network", "detail": "curl: (28) Connection timed out after 10000 milliseconds", "at": "2026-10-13T16:08:45+00:00"}
+{"url": "https://www.gnu.org/software/bison/manual/html_node/Recursion.html", "reason": "timed-out", "kind": "network", "detail": "curl: (28) Connection timed out after 10001 milliseconds", "at": "2026-10-13T16:09:54+00:00"}
