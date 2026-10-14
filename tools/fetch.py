@@ -6,8 +6,9 @@ Usage (run from the repo root; [slug] defaults to topics/.current):
 
 Prints one line that starts with OK, PARTIAL or UNREADABLE. OK gives the path of a local
 text copy to read or grep. PDFs are converted with pdftotext and carry "[pdf page N]"
-markers. HTML is converted with pandoc and ends with a list of the page's links. Other
-text is stored as it is, so source files keep their line numbers.
+markers, and a symbol with no text form, often a math symbol such as ε, shows as U+FFFD.
+HTML is converted with pandoc and ends with a list of the page's links. Other text is
+stored as it is, so source files keep their line numbers.
 
 - A URL that is already in topics/<slug>/cache/ is never downloaded again.
 - An S-id is read from the learner's own copy at topics/<slug>/library/<S-id>.<ext>
@@ -225,11 +226,18 @@ def html_text(path: Path, ctype: str, base: str) -> str:
     return text
 
 
+# pdftotext emits a glyph that its font maps to no Unicode character as a raw control
+# character, which is invisible when read. Math fonts do this for symbols such as ε and ≠,
+# so "i ≠ j" silently reads "i = j". MISSING makes the gap visible.
+MISSING = "\ufffd"
+CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0e-\x1f\x7f-\x9f]")
+
+
 def pdf_text(path: Path) -> str:
     r = subprocess.run(["pdftotext", "-enc", "UTF-8", str(path), "-"], capture_output=True, timeout=180)
     if r.returncode != 0:
         raise Unreadable("not-text", "pdftotext failed: " + r.stderr.decode(errors="replace").strip()[:200])
-    pages = r.stdout.decode("utf-8", "replace").split("\f")
+    pages = CONTROL_RE.sub(MISSING, r.stdout.decode("utf-8", "replace")).split("\f")
     if pages and not pages[-1].strip():
         pages.pop()
     chars = sum(len("".join(p.split())) for p in pages)
@@ -263,12 +271,17 @@ def store(txt: Path, kind: str, text: str, origin: str):
 
 def ok(txt: Path, cached: bool, note=None) -> int:
     meta = json.loads(txt.with_suffix(".json").read_text())
-    lines = txt.read_text(encoding="utf-8").count("\n")
-    print(f"OK {rel(txt)}  ({lines} lines, {meta['kind']}, fetched {meta['fetched']}"
+    text = txt.read_text(encoding="utf-8")
+    print(f"OK {rel(txt)}  ({text.count(chr(10))} lines, {meta['kind']}, fetched {meta['fetched']}"
           f"{', already cached' if cached else ''})")
     if meta["kind"].endswith("pdf"):
         print("note: [pdf page N] markers count PDF pages, which can differ from the printed page "
               "numbers; in locators, give the section and the printed page.")
+        missing = text.count(MISSING)
+        if missing:
+            print(f"note: {missing} symbols in this PDF have no text form and show as {MISSING}. They "
+                  f"are often math symbols such as ε, ≠ or ∉, so a formula with {MISSING} is missing "
+                  "a symbol. Quote it as it stands and do not fill the symbol in.")
     if note:
         print(note)
     return 0
