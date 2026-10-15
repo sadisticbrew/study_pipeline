@@ -49,6 +49,8 @@ While writing:
   paragraph that leads into the figure, the `dot` block, then the text that points at what
   to notice. Drop a planned figure if the prose turns out clearer without it, and add one
   the brief did not plan only when the section passes the same test.
+- When the brief or the lab notes name a generated figure (a `.dot` file in a lab's `out/`),
+  include it with `include=` instead of drawing it.
 - Respect the word budget per section. Running long in one section means cutting later.
 
 ## 3. Lint and fix

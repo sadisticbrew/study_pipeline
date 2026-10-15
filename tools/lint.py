@@ -807,7 +807,7 @@ class Linter:
             while body and not body[-1].strip():
                 body.pop()
             if "dot" in classes:
-                self.diagram(cb, body, rng)
+                self.diagram(cb, body, rng, lab_cache)
                 continue
             inc = kv.get("include")
             if inc is None and "sketch" not in classes:
@@ -853,7 +853,7 @@ class Linter:
             self.add("code-total", first, f"the chapter shows {total} lines of included code "
                      f"(max {max_total}); trim the includes to the essential lines", None)
 
-    def diagram(self, cb, body, rng):
+    def diagram(self, cb, body, rng, lab_cache):
         cap = (cb["kv"].get("caption") or "").strip()
         if not cap:
             self.add("diagram", cb["start"], "dot diagram has no caption; add caption=\"...\", "
@@ -861,11 +861,37 @@ class Linter:
         elif "[@" in cap:
             self.add("diagram", cb["start"], "a caption cannot cite; state the claim with its "
                      "citation in the prose beside the figure", rng)
+        text = "\n".join(body)
+        inc = cb["kv"].get("include")
+        if inc is not None:
+            if any(ln.strip() for ln in body):
+                self.add("diagram", cb["start"], "include= block must have an empty body; the "
+                         "renderer inlines the file", rng)
+                return
+            if cb["kv"].get("lines") is not None:
+                self.add("diagram", cb["start"], "lines= is not supported on .dot blocks", rng)
+                return
+            path = self.ctx["base_dir"] / inc
+            if not (path.parent.name == "out" and (path.parent.parent / "lab.json").is_file()):
+                self.add("diagram", cb["start"], ".dot include must point to a file in a lab's out/ "
+                         "directory (lab/<name>/out/...)", rng)
+                return
+            if not path.is_file():
+                self.add("include", cb["start"], f"include file not found: {inc} "
+                         f"(resolved against {self.ctx['base_shown']})", rng)
+                return
+            if not self.check_lab(cb, path, lab_cache):
+                return
+            try:
+                text = path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as e:
+                self.add("include", cb["start"], f"cannot read {inc}: {getattr(e, 'strerror', None) or e}", rng)
+                return
         dot = shutil.which("dot")
         if not dot:
             return  # render.py reports a missing Graphviz
         try:
-            r = subprocess.run([dot, "-Tsvg", "-o", os.devnull], input="\n".join(body),
+            r = subprocess.run([dot, "-Tsvg", "-o", os.devnull], input=text,
                                capture_output=True, text=True, timeout=20)
         except subprocess.TimeoutExpired:
             self.add("diagram", cb["start"], "Graphviz needed more than 20 s for this diagram; "
@@ -898,7 +924,7 @@ class Linter:
 
     def check_lab(self, cb, path, cache):
         rng = (cb["start"], cb["end"])
-        lab = path.parent
+        lab = path.parent.parent if path.parent.name == "out" else path.parent
         cmd = f"python3 tools/lab.py run {self.ctx['chapter_dir_shown']}"
         key = str(lab.resolve()) if lab.exists() else str(lab)
         if key in cache:
@@ -907,7 +933,7 @@ class Linter:
             msg = None
             labname = lab.name
             if not (lab / "lab.json").is_file():
-                msg = (f".output include must point into a lab directory; {lab} has no lab.json")
+                msg = f"include must point into a lab directory; {lab} has no lab.json"
             else:
                 try:
                     lj = load_json(lab / "lab.json")

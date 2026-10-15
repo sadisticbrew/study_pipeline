@@ -42,6 +42,35 @@ For each lab in the plan:
 3. Read `run.out`. If the run failed, or the output does not clearly show the intended idea,
    fix the lab and rerun.
 
+## Machine-state labs (x86-64)
+
+When a figure must show real x86-64 machine state (stack slots, frames, registers at an
+instruction), the lab records the program with `systemslab` and generates the figure. Never
+draw such a figure by hand. Use this `run.sh` pattern:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+export LC_ALL=C
+ulimit -c 0
+mkdir -p out
+gcc -O0 -g -fcf-protection=none -o prog prog.c
+systemslab record --strict --quiet -o out/prog.slt -- ./prog
+systemslab stack out/prog.slt 'SYMBOL+0xOFF@K'
+systemslab dot stack out/prog.slt 'SYMBOL+0xOFF@K' > out/stack-NAME.dot
+systemslab check-abi out/prog.slt
+```
+
+- `out/` is kept by `tools/lab.py` and is not part of the lab hash. `*.slt` traces stay out
+  of git (`.gitignore` covers them); the generated `.dot` files are committed.
+- To find the snapshot point, list the steps of the function:
+  `systemslab steps out/prog.slt --func NAME --limit 40`. A locator is `SYMBOL+0xOFF@K` (the
+  K-th time the instruction at that offset is about to run) or `step:N`.
+- systemslab output is already deterministic, so never print raw addresses yourself.
+- Machine-state figures are always generated with `systemslab dot stack`.
+- Check that the tool exists with `python3 tools/lab.py doctor --toolchains systemslab`.
+- In your reply, list each generated figure with its path and the instruction it shows.
+
 ## Reply
 
 For each lab, give its name, what it demonstrates, the line ranges worth showing in the

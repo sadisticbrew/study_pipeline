@@ -1,0 +1,19 @@
+fact(5) = 120
+step 28 at fact+0xc (cmpq $0x1,-0x8(%rbp))
+main's frame
+fact(5), 32 bytes
+     8(%rbp)  return address: movq in main   main+0xe
+     0(%rbp)  saved %rbp: main's             stack0-0x8
+    -8(%rbp)  n = 5                          5
+   -16(%rbp)  unused                         -
+fact(4), 32 bytes
+     8(%rbp)  return address: imulq in fact  fact+0x2a
+     0(%rbp)  saved %rbp: fact(5)'s          stack0-0x18
+    -8(%rbp)  n = 4                          4
+   -16(%rbp)  unused                         -
+fact(3), 32 bytes
+     8(%rbp)  return address: imulq in fact  fact+0x2a
+     0(%rbp)  saved %rbp: fact(4)'s          stack0-0x38  ← %rbp
+    -8(%rbp)  n = 3                          3
+   -16(%rbp)  unused                         -            ← %rsp
+no findings

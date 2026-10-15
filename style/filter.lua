@@ -205,9 +205,14 @@ local function sh_quote(s)
 end
 
 local function dot_figure(cb)
+  local text = cb.text
+  if cb.attributes.include then
+    text = include_text(cb.attributes.include, nil)
+    if text == nil then return {} end
+  end
   dot_count = dot_count + 1
   local base = string.format("%s/dot-%d", cfg.build_dir, dot_count)
-  write_file(base .. ".gv", cb.text)
+  write_file(base .. ".gv", text)
   -- Placeholder colors are swapped for theme colors by template.typ.
   local args = {
     "-Tsvg",
@@ -220,7 +225,7 @@ local function dot_figure(cb)
   for _, a in ipairs(args) do table.insert(cmd, sh_quote(a)) end
   local ok = os.execute(table.concat(cmd, " ") .. " 2> " .. sh_quote(base .. ".err"))
   if not ok then
-    local first = cb.text:match("^%s*([^\n]*)") or ""
+    local first = text:match("^%s*([^\n]*)") or ""
     local msg = (read_file(base .. ".err") or "dot not found or failed"):gsub("%s+$", "")
     if msg == "" then msg = "dot exited with an error" end
     fail(string.format("dot diagram #%d (starting %q) failed to render: %s", dot_count, first:sub(1, 40), msg))

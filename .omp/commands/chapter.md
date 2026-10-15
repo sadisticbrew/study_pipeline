@@ -37,7 +37,9 @@ chapters marked `known`, `topics/<slug>/glossary.jsonl`, `topics/<slug>/pitfalls
    their head, add a diagram plan: what the figure shows, drawn from the running example,
    and what the prose around it must still explain (see "Diagrams" in `style/STYLE.md`).
    Plan one only where it earns its place. There is no target count, and most sections
-   need none.
+   need none. When a figure shows x86-64 machine state from the running example (stack
+   slots, frames, registers at an instruction), plan it as generated: name the lab that
+   records it and the instruction to snapshot, and put that in the lab plan.
 5. **Running example.** One example to carry through the chapter.
 6. **New terms.** The terms this chapter introduces. Exclude glossary terms and anything
    the profile says the reader knows.

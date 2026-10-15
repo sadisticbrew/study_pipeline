@@ -64,6 +64,10 @@ facts that prose cites. A detail that the prose does not state and support is
 **unsupported**, and one that disagrees with the prose or the facts is **contradicted**. Fix
 it in the `dot` source with the smallest change, or remove that detail.
 
+A diagram block with `include=` was generated from a recorded lab run. Never edit files under
+`out/`. If the prose disagrees with the figure, fix the prose; if the figure shows the wrong
+moment, report it for a human.
+
 Common knowledge needs no citation. "A byte has eight bits" is fine. The behavior of a
 specific system, version, or algorithm is never common knowledge. Reasoning that the
 chapter shows step by step, such as arithmetic, a derivation, or a trace of the lab, is

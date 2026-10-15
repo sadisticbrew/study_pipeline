@@ -146,6 +146,8 @@ lab/<name>/
   run.out         combined stdout and stderr of the last run (written by tools/lab.py)
   run.status.json {"ok": true, "exit": 0, "expect": "success", "runner": "local",
                    "duration_s": 1.2, "hash": "<sha256 of lab inputs>", "ran_at": "..."}
+  out/            files the lab writes for the chapter (generated figures, traces); kept by
+                  tools/lab.py and not part of the hash; *.slt traces are not in git
 ```
 
 - `runner` is `local` (sandboxed with bubblewrap, no network unless `network` is true),
@@ -154,5 +156,8 @@ lab/<name>/
   topic `lab` defaults and then to `local`, `success`, `60`, `false`.
 - `expect` is `success` (exit 0) or `failure` (non-zero exit, for "watch this get
   rejected" examples).
-- `hash` covers every file in the lab directory except `run.out` and `run.status.json`,
-  so a stale output is detectable.
+- `hash` covers every file in the lab directory except `run.out`, `run.status.json` and
+  everything under `out/`, so a stale output is detectable.
+- `out/` holds files the lab writes for the chapter, such as generated figures and traces.
+  `tools/lab.py run` keeps it (replacing it with what the run produced) and it is not part
+  of the hash. `*.slt` traces are not in git.

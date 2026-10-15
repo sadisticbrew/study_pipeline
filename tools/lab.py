@@ -21,6 +21,10 @@ otherwise only --topic-dir provides one.
 Runners: local = bubblewrap sandbox (host / read-only, only the temp workdir writable,
 no network unless "network": true); vng = virtme-ng VM booting the host kernel, root
 in the guest; none = never run (status records ok true, no run.out).
+
+A lab may write files for the chapter (generated figures, traces) into out/. After a run,
+<lab>/out/ is replaced by the workdir's out/ (removed if the run made none); it is not
+part of the hash, so editing it never makes a lab stale.
 """
 
 import argparse
@@ -41,6 +45,7 @@ BUILTIN = {"runner": "local", "expect": "success", "timeout": 60, "network": Fal
 RUNNERS = ("local", "vng", "none")
 EXPECTS = ("success", "failure")
 OUTPUT_FILES = ("run.out", "run.status.json")
+OUTPUT_DIR = "out"  # files the lab writes for the chapter; kept, and not part of the hash
 MAX_LINES = 400
 HEAD_LINES = 300  # kept from the top when truncating; the rest comes from the tail
 FAIL_TAIL = 15
@@ -56,7 +61,8 @@ class LabError(Exception):
 #   walk the lab dir with os.walk(followlinks=False); take every entry that is a file
 #   (os.path.isfile, so symlinks to files count with their target's bytes);
 #   rel = path relative to the lab dir, as a POSIX string;
-#   skip rel == "run.out" and rel == "run.status.json" (top level only);
+#   skip rel == "run.out" and rel == "run.status.json" (top level only), and every rel
+#   that starts with "out/" (the kept output directory);
 #   sort by rel (plain str order); for each: h.update(rel.encode("utf-8") + b"\0" + bytes)
 #   result = h.hexdigest()
 def lab_hash(lab_dir: Path) -> str:
@@ -67,7 +73,7 @@ def lab_hash(lab_dir: Path) -> str:
             if not os.path.isfile(full):
                 continue
             rel = Path(os.path.relpath(full, lab_dir)).as_posix()
-            if rel in OUTPUT_FILES:
+            if rel in OUTPUT_FILES or rel.startswith(OUTPUT_DIR + "/"):
                 continue
             rels.append(rel)
     h = hashlib.sha256()
@@ -295,6 +301,14 @@ def write_json(path: Path, data: dict):
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
+def remove_kept_out(lab_dir: Path):
+    kept = lab_dir / OUTPUT_DIR
+    if kept.is_dir() and not kept.is_symlink():
+        shutil.rmtree(kept)
+    elif kept.exists() or kept.is_symlink():
+        kept.unlink()
+
+
 def run_lab(lab_dir: Path, settings: dict) -> dict:
     """Run one lab and write its outputs. Returns the status dict plus 'output' text."""
     runner, expect, timeout, network = (settings[k] for k in ("runner", "expect", "timeout", "network"))
@@ -303,6 +317,7 @@ def run_lab(lab_dir: Path, settings: dict) -> dict:
         out_file = lab_dir / "run.out"
         if out_file.exists():
             out_file.unlink()  # output of a never-run lab must not be included
+        remove_kept_out(lab_dir)
         status = {"ok": True, "exit": None, "expect": expect, "runner": "none", "duration_s": 0.0,
                   "hash": digest, "ran_at": now_iso(), "timed_out": False}
         write_json(lab_dir / "run.status.json", status)
@@ -311,7 +326,8 @@ def run_lab(lab_dir: Path, settings: dict) -> dict:
     try:
         workdir = os.path.join(tmp, "w")
         shutil.copytree(lab_dir, workdir, symlinks=True,
-                        ignore=lambda d, names: [n for n in names if n in OUTPUT_FILES] if Path(d) == lab_dir else [])
+                        ignore=lambda d, names: [n for n in names if n in OUTPUT_FILES or n == OUTPUT_DIR]
+                        if Path(d) == lab_dir else [])
         cmd = bwrap_cmd(workdir, network) if runner == "local" else vng_cmd(workdir, network)
         start = time.monotonic()
         code, timed_out, raw = run_process(cmd, workdir, timeout)
@@ -319,6 +335,10 @@ def run_lab(lab_dir: Path, settings: dict) -> dict:
         text = clean_output(raw, workdir)
         if timed_out:
             text += f"[tools/lab.py: killed after the {timeout}s timeout]\n"
+        remove_kept_out(lab_dir)
+        produced = Path(workdir) / OUTPUT_DIR
+        if produced.is_dir() and not produced.is_symlink():
+            shutil.copytree(produced, lab_dir / OUTPUT_DIR, symlinks=False, ignore_dangling_symlinks=True)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     ok = (not timed_out) and ((code == 0) if expect == "success" else (code not in (0, None)))

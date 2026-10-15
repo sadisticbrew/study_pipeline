@@ -132,6 +132,18 @@ digraph { rankdir=LR; Follower -> Candidate [label="timeout"]; }
 - `tools/lint.py` runs Graphviz on every block, so a syntax error shows up as a `diagram`
   finding.
 
+**Generated from a lab.** A figure that shows real machine state can be drawn by a lab
+instead of by hand. The lab writes the `.dot` file into its `out/` directory, and the block
+includes it with an empty body:
+
+````markdown
+```{.dot include="lab/stack-trace/out/stack-fact3.dot" caption="The stack while fact(3) runs."}
+```
+````
+
+`lines=` is not allowed on `.dot` blocks. The freshness rules of `.output` includes apply:
+`tools/lint.py` reports a lab that has not been run or whose files changed since its last run.
+
 ## Tables
 
 Pipe tables only, with a header row.

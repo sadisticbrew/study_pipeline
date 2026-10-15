@@ -120,30 +120,9 @@ The frames lab runs `fact(5)` under gdb with a breakpoint on `fact`, and at each
 ```{.output include="lab/frames/run.out" lines="53-58"}
 ```
 
-Five activations, five different addresses, each 32 bytes below the last. Count what each call adds and the spacing explains itself. `subq $16` reserves 16 bytes and the saved `%rbp` takes 8, and the remaining 8 bytes of the 32 are the return address that `call` pushed [@F46]. Since `fact` makes no other pushes, every frame is the same size, so the addresses step down evenly. Here are the first three of those frames while `fact(3)` runs.
+Five activations, five different addresses, each 32 bytes below the last. Count what each call adds and the spacing explains itself. `subq $16` reserves 16 bytes and the saved `%rbp` takes 8, and the remaining 8 bytes of the 32 are the return address that `call` pushed [@F46]. Since `fact` makes no other pushes, every frame is the same size, so the addresses step down evenly. The stack-trace lab records the same program one instruction at a time, and the figure below is drawn from that recording at the moment `fact(3)` has just stored its `n`.
 
-```{.dot caption="The stack while fact(3) runs, with one 32-byte frame per activation and higher addresses at the top."}
-digraph { node [shape=plaintext];
-  t [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="2">
-    <TR><TD></TD><TD><TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
-      <TR><TD WIDTH="160">main's frame</TD><TD BORDER="0" WIDTH="50"></TD></TR></TABLE></TD></TR>
-    <TR><TD ALIGN="RIGHT">fact(5),<BR/>32 bytes</TD><TD><TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
-      <TR><TD WIDTH="160">return address into main</TD><TD BORDER="0" WIDTH="50"></TD></TR>
-      <TR><TD>saved %rbp: main's</TD><TD BORDER="0"></TD></TR>
-      <TR><TD>n = 5</TD><TD BORDER="0"></TD></TR>
-      <TR><TD>unused</TD><TD BORDER="0"></TD></TR></TABLE></TD></TR>
-    <TR><TD ALIGN="RIGHT">fact(4),<BR/>32 bytes</TD><TD><TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
-      <TR><TD WIDTH="160">return address: imulq in fact</TD><TD BORDER="0" WIDTH="50"></TD></TR>
-      <TR><TD>saved %rbp: fact(5)'s</TD><TD BORDER="0"></TD></TR>
-      <TR><TD>n = 4</TD><TD BORDER="0"></TD></TR>
-      <TR><TD>unused</TD><TD BORDER="0"></TD></TR></TABLE></TD></TR>
-    <TR><TD ALIGN="RIGHT">fact(3),<BR/>32 bytes</TD><TD><TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
-      <TR><TD WIDTH="160">return address: imulq in fact</TD><TD BORDER="0" WIDTH="50"></TD></TR>
-      <TR><TD>saved %rbp: fact(4)'s</TD><TD BORDER="0" ALIGN="LEFT">← %rbp</TD></TR>
-      <TR><TD>n = 3</TD><TD BORDER="0"></TD></TR>
-      <TR><TD>unused</TD><TD BORDER="0" ALIGN="LEFT">← %rsp</TD></TR></TABLE></TD></TR>
-  </TABLE>>];
-}
+```{.dot include="lab/stack-trace/out/stack-fact3.dot" caption="The stack while fact(3) runs, drawn from a recorded run, with one 32-byte frame per activation and higher addresses at the top."}
 ```
 
 Look at the return addresses. The ones in the `fact(4)` and `fact(3)` frames are the same address, the `imulq` right after `call fact`, because both were pushed by that one instruction [@F9]. What keeps the activations apart is the chain of saved `%rbp` values. When `fact(3)` returns, its `leave` restores `fact(4)`'s frame pointer [@F15], so the `imulq` that runs next reads `fact(4)`'s `n` from `-8(%rbp)`.
