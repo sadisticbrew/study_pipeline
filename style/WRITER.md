@@ -45,13 +45,18 @@ While writing:
 - Include lab code and output only with `include=`, and show only the lines that carry the
   idea (see the limits in `style/FORMAT.md`). Describe only what `run.out` shows.
 - Mark each new term at its first use, and check that it does not appear earlier.
+- Before each new abstraction, apply "Mechanism before abstraction" in `style/STYLE.md`.
+  The brief lists what each section builds on. If a mechanism is still untaught when you
+  reach it, teach it and trace it by hand first, even where the brief orders the section
+  otherwise.
 - Draw the diagrams the brief plans, following "Diagrams" in `style/STYLE.md`: write the
   paragraph that leads into the figure, the `dot` block, then the text that points at what
   to notice. Drop a planned figure if the prose turns out clearer without it, and add one
   the brief did not plan only when the section passes the same test.
 - When the brief or the lab notes name a generated figure (a `.dot` file in a lab's `out/`),
   include it with `include=` instead of drawing it.
-- Respect the word budget per section. Running long in one section means cutting later.
+- Respect the word budget per section. Running long in one section means cutting later,
+  from lower-value material, never from a foundation the reader needs.
 
 ## 3. Lint and fix
 
@@ -64,5 +69,5 @@ at most three rounds. Fix warnings when the fix makes the text better.
 ## 4. Report
 
 Reply with: final word count, the number of `[@unverified]` markers and what each one is
-about, any brief items you could not cover and why, and any lint findings you left in place
-with the reason.
+about, any brief items you could not cover and why, any foundation you added that the brief
+did not plan, and any lint findings you left in place with the reason.
