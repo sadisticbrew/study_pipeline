@@ -4,6 +4,8 @@
 
 **ABI** (chapter 2). Application binary interface, the rules compiled code must follow to interoperate, including the calling convention and data layout.
 
+**accepting state** (chapter 3). A state meaning that the characters read so far form a complete string the machine recognises, drawn as a double circle.
+
 **ahead-of-time compilation** (chapter 1). Translating code before it runs, commonly to machine code.
 
 **ALGOL** (chapter 4). Short for ALGOrithmic Language.
@@ -50,7 +52,7 @@
 
 **derivation** (chapter 4). A sequence of rewriting steps that begins with the start symbol and ends with a string of terminals.
 
-**DFA** (chapter 3). An automaton with exactly one next state for each state and input character, and no ε-transitions.
+**DFA** (chapter 3). A finite automaton in which every state has at most one transition for each input character, so the next state is never in doubt.
 
 **DFA minimization** (chapter 3). Merging the states of a DFA that no input string can tell apart, giving the smallest equivalent DFA.
 
@@ -59,6 +61,8 @@
 **EBNF** (chapter 4). Extended BNF, which adds grouping, optional parts and repetition to plain BNF.
 
 **epilogue** (chapter 2). The instructions at the end of a function that tear down its stack frame and return.
+
+**finite automaton** (chapter 3). A machine with a fixed set of states, a start state, accepting states and labelled transitions, which reads its input one character at a time.
 
 **FIRST set** (chapter 4). The set of terminals that can appear as the first token of some string derived from a symbol or sequence of symbols.
 
@@ -110,7 +114,7 @@
 
 **middle end** (chapter 1). The part of a compiler that improves the program in an internal form, usually largely independent of the source language and target machine.
 
-**NFA** (chapter 3). A graph of states with character-labelled or ε-edges that accepts a string if some path from the start state, reading the string, ends in an accepting state.
+**NFA** (chapter 3). A finite automaton that may have several transitions for the same character from one state, and that accepts a string if some way of following its arrows while reading it ends in an accepting state.
 
 **nonterminal** (chapter 4). A named syntactic category in a grammar, such as Expr, that rules rewrite into other symbols.
 
@@ -140,7 +144,7 @@
 
 **regular expression** (chapter 3). A pattern that describes a set of strings using concatenation, alternation and repetition.
 
-**regular language** (chapter 3). A set of strings that some regular expression describes, equivalently one that some finite automaton recognises.
+**regular language** (chapter 3). A set of strings that some regular expression describes.
 
 **return address** (chapter 2). The address of the instruction just after a call, saved on the stack so the callee's ret can resume the caller there.
 
@@ -160,6 +164,8 @@
 
 **start symbol** (chapter 4). The nonterminal that every derivation of a whole program begins from.
 
+**state** (chapter 3). One situation a machine can be in, standing for everything it needs to remember about the characters read so far.
+
 **subset construction** (chapter 3). The algorithm that builds a DFA whose states are the sets of NFA states reachable on some input.
 
 **target language** (chapter 1). The language a compiler writes its output program in.
@@ -172,10 +178,12 @@
 
 **token kind** (chapter 3). The category a token belongs to, such as identifier, integer literal or less-or-equal operator.
 
+**transition** (chapter 3). A rule that moves a machine from one state to another when the next input character is a given one, drawn as a labelled arrow.
+
 **virtual machine** (chapter 1). A software execution environment for an instruction set, which may interpret instructions or compile them to machine code.
 
 **zero extension** (chapter 2). Widening a value to more bits by filling the new high bits with zeros.
 
 **ε-closure** (chapter 3). The set of NFA states reachable from a given set by ε-transitions alone, including the set itself.
 
-**ε-transition** (chapter 3). An edge in an automaton that can be followed without reading any input character.
+**ε-transition** (chapter 3). A transition that a machine may follow at any time without reading an input character.

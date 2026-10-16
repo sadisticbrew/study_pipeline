@@ -51,11 +51,11 @@
 {"term": "regular expression", "def": "A pattern that describes a set of strings using concatenation, alternation and repetition.", "chapter": 3}
 {"term": "alternation", "def": "The regular expression operation that matches anything either of two patterns matches.", "chapter": 3}
 {"term": "kleene star", "def": "The regular expression operation that matches zero or more repetitions of a pattern.", "chapter": 3}
-{"term": "regular language", "def": "A set of strings that some regular expression describes, equivalently one that some finite automaton recognises.", "chapter": 3}
-{"term": "NFA", "def": "A graph of states with character-labelled or ε-edges that accepts a string if some path from the start state, reading the string, ends in an accepting state.", "chapter": 3}
-{"term": "ε-transition", "def": "An edge in an automaton that can be followed without reading any input character.", "chapter": 3}
+{"term": "regular language", "def": "A set of strings that some regular expression describes.", "chapter": 3}
+{"term": "NFA", "def": "A finite automaton that may have several transitions for the same character from one state, and that accepts a string if some way of following its arrows while reading it ends in an accepting state.", "chapter": 3}
+{"term": "ε-transition", "def": "A transition that a machine may follow at any time without reading an input character.", "chapter": 3}
 {"term": "thompson’s construction", "def": "A method that builds an NFA from a regular expression by combining one small NFA fragment per operator.", "chapter": 3}
-{"term": "DFA", "def": "An automaton with exactly one next state for each state and input character, and no ε-transitions.", "chapter": 3}
+{"term": "DFA", "def": "A finite automaton in which every state has at most one transition for each input character, so the next state is never in doubt.", "chapter": 3}
 {"term": "ε-closure", "def": "The set of NFA states reachable from a given set by ε-transitions alone, including the set itself.", "chapter": 3}
 {"term": "subset construction", "def": "The algorithm that builds a DFA whose states are the sets of NFA states reachable on some input.", "chapter": 3}
 {"term": "DFA minimization", "def": "Merging the states of a DFA that no input string can tell apart, giving the smallest equivalent DFA.", "chapter": 3}
@@ -87,3 +87,7 @@
 {"term": "binding power", "def": "A number attached to an operator saying how tightly it holds its operands, with higher numbers grouping first.", "chapter": 4}
 {"term": "pratt parsing", "def": "Expression parsing guided by binding powers, with token-specific behavior for starting and continuing expressions.", "chapter": 4}
 {"term": "precedence climbing", "def": "Theodore Norvell's name for an expression-parsing loop driven by operator precedence and a minimum, later shown to be Pratt parsing.", "chapter": 4}
+{"term": "state", "def": "One situation a machine can be in, standing for everything it needs to remember about the characters read so far.", "chapter": 3}
+{"term": "transition", "def": "A rule that moves a machine from one state to another when the next input character is a given one, drawn as a labelled arrow.", "chapter": 3}
+{"term": "accepting state", "def": "A state meaning that the characters read so far form a complete string the machine recognises, drawn as a double circle.", "chapter": 3}
+{"term": "finite automaton", "def": "A machine with a fixed set of states, a start state, accepting states and labelled transitions, which reads its input one character at a time.", "chapter": 3}
