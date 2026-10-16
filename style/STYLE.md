@@ -34,6 +34,22 @@ Every chapter moves through the same arc, even though the headings change.
 7. **Check understanding.** Self-test questions that need thinking, not recall. At least one
    asks the reader to predict what happens in a situation the chapter did not show.
 
+## Mechanism before abstraction
+
+Before introducing an unfamiliar abstraction, check that the reader has already been taught
+the concrete mechanism it describes, earlier in this chapter, in an earlier chapter's
+summary, or in the profile. Defining a term does not establish understanding. A margin note
+says what a word means, not how the thing behaves, so a term the reader has only seen
+defined is not yet something you can build on. If the mechanism has not been taught, teach
+it first, starting from something the reader already knows.
+
+When the concept involves state changes, such as a machine reading input, a stack during
+calls, or a value updated by an analysis, show the changes happening and trace them step by
+step on a small case from the running example before presenting any construction algorithm
+or implementation code. A trace table or a short series of snapshots usually works. The
+algorithm and the code then reuse that same example and the same names or numbers, so the
+reader recognises what they compute.
+
 ## Voice
 
 - Write flowing paragraphs of connected sentences. Vary sentence length the way a person

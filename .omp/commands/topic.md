@@ -27,12 +27,13 @@ they are to real expertise in the subject. Do this yourself, now, without search
 - Group chapters into 3 to 6 parts. Most topics need 8 to 20 chapters, so size the roadmap
   to the subject and do not pad it.
 - Each chapter has 3 or 4 core ideas, small enough for 2500 to 3500 words of prose. That
-  renders to about 10 to 15 pages, which is a hard ceiling. When a chapter would need more,
-  split it.
-- Order chapters so each one needs only earlier chapters and the profile's known material.
-  The `prereqs` field says, in plain words, what the chapter assumes.
-- Where the profile lists something as shaky and the subject depends on it, add a short
-  bridge chapter early on instead of assuming it.
+  renders to about 10 to 15 pages. When a chapter would need more, split it.
+- Order chapters so each one needs only earlier chapters and what the profile lists as
+  known. The `prereqs` field says, in plain words, everything the chapter assumes,
+  background such as discrete math included.
+- Where the subject depends on something the profile lists as shaky or does not list at
+  all, teach it in an earlier chapter's core ideas or a short bridge chapter instead of
+  assuming it, and count it when sizing that chapter.
 - The early chapters build intuition and motivation. The later ones reach the precise,
   expert material: real implementations, the hard edge cases, performance, and how
   practitioners actually reason about the subject.

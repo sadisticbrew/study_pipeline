@@ -27,11 +27,20 @@ chapters marked `known`, `topics/<slug>/glossary.jsonl`, `topics/<slug>/pitfalls
 `topics/<slug>/sources.jsonl`, and `learner-profile.md`. Then write `CD/brief.md` with:
 
 1. **Starting point.** What the reader knows at this moment, from summaries, known chapters,
-   and the profile. Note which earlier ideas this chapter should explicitly connect to.
+   and the profile. Anything none of these teach counts as unknown, including background
+   the chapter's `prereqs` take for granted. Note which earlier ideas this chapter should
+   explicitly connect to.
 2. **Crux.** The one question the chapter answers.
 3. **Opening situation.** A concrete scenario that makes the problem felt.
-4. **Sections.** For each, give a working title, the point it makes, a word budget (the
-   budgets sum to the chapter's `words` range), and the source ids most likely to ground it.
+4. **Sections.** For each, give a working title, the point it makes, the mechanisms it
+   builds on and where the reader learned each one, a word budget, and the source ids most
+   likely to ground it. A mechanism the reader has not learned yet is taught in that
+   section or an earlier one, with a small example traced by hand (see "Mechanism before
+   abstraction" in `style/STYLE.md`), and its words count in the budget. The budgets sum
+   to the chapter's `words` range. When the foundations do not fit, cut lower-value
+   material first. If that is not enough, raise the maximum, to at most 5000, with
+   `python3 tools/state.py set <slug> <n> words=MIN,MAX`, and beyond that ask the learner
+   whether to split the chapter.
    When the point rests on a structure, the steps of an algorithm, a flow of execution or
    data, or a sequence of state changes that the reader would otherwise have to hold in
    their head, add a diagram plan: what the figure shows, drawn from the running example,
