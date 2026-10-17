@@ -71,6 +71,16 @@ systemslab check-abi out/prog.slt
 - Check that the tool exists with `python3 tools/lab.py doctor --toolchains systemslab`.
 - In your reply, list each generated figure with its path and the instruction it shows.
 
+### Guides for machine-state labs
+
+When the chapter's `tryit` block asks the learner to explore a recording, add `guide.md` next to `run.sh`. `systemslab view lab/<name>` shows it in the viewer's Guide tab. It is Markdown plus three line directives:
+
+- `@go LOCATOR` renders a button that jumps to that moment.
+- `@predict EXPR [as TYPE] at LOCATOR [after]` asks for a prediction before revealing the recorded value. `EXPR` is a register (`rax`, `eax`), a C variable in scope (`n`, read as its declared type), an AT&T memory operand with a type (`-0x8(%rbp) as i64`), or `rsp mod 16`. `after` checks the state after that instruction runs.
+- Lines starting with `> ` right after a `@predict` are its explanation, hidden until the learner answers.
+
+Prefer source-line locators (`fact.c:4@3`, the third time execution enters line 4) over `SYMBOL+0xOFF@K`, because they survive compiler changes. Write explanations only from values that `systemslab check-guide out/prog.slt guide.md` prints, and end `run.sh` with `systemslab check-guide out/prog.slt guide.md > /dev/null` so the lab fails when a directive stops resolving. In the `tryit` block, tell the learner to run `systemslab view lab/<name>` from the chapter directory.
+
 ## Reply
 
 For each lab, give its name, what it demonstrates, the line ranges worth showing in the
