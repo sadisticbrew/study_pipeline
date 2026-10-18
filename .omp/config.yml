@@ -8,5 +8,5 @@
 modelRoles:
   sp_writer: anthropic/claude-opus-5-5:low
   sp_checker: openai-codex/gpt-6.1-sol:high
-  sp_scout: opencode-go/deepseek-v4.1-flash:low
+  sp_scout: opencode-go/deepseek-v4.1-flash:high
   sp_lab: openai-codex/gpt-6.1-sol:medium
