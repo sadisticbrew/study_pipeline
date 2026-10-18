@@ -1,0 +1,7 @@
+== Go ==
+go version go1.27.1-X:nodwarf5 linux/amd64
+== f() - g() * h() ==
+f
+g
+h
+value: 4

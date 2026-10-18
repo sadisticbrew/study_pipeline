@@ -1,0 +1,91 @@
+== Python ==
+Python 3.14.7
+== G1 leftmost derivation: value 0 ==
+E
+E - E    [E → E - E]
+E - E - E    [E → E - E]
+10 - E - E    [E → num]
+10 - 4 - E    [E → num]
+10 - 4 - E * E    [E → E * E]
+10 - 4 - 3 * E    [E → num]
+10 - 4 - 3 * 2    [E → num]
+== G1 leftmost derivation: value 6 ==
+E
+E * E    [E → E * E]
+E - E * E    [E → E - E]
+E - E - E * E    [E → E - E]
+10 - E - E * E    [E → num]
+10 - 4 - E * E    [E → num]
+10 - 4 - 3 * E    [E → num]
+10 - 4 - 3 * 2    [E → num]
+== G1 trees ==
+(10 - (4 - (3 * 2))) = 12
+(10 - ((4 - 3) * 2)) = 8
+((10 - 4) - (3 * 2)) = 0
+((10 - (4 - 3)) * 2) = 18
+(((10 - 4) - 3) * 2) = 6
+G1 tree count: 5
+== G2 layered ==
+G2 tree count: 1
+((10 - 4) - (3 * 2)) = 0
+== G3 after direct left-recursion elimination ==
+Expr → Term Expr'
+Expr' → - Term Expr' | ε
+Term → Factor Term'
+Term' → * Factor Term' | ε
+Factor → ( Expr ) | num
+== G3 FIRST and FOLLOW ==
+FIRST pass 1: Expr {}  Expr' {-, ε}  Term {}  Term' {*, ε}  Factor {num, (}
+FIRST pass 2: Expr {}  Expr' {-, ε}  Term {num, (}  Term' {*, ε}  Factor {num, (}
+FIRST pass 3: Expr {num, (}  Expr' {-, ε}  Term {num, (}  Term' {*, ε}  Factor {num, (}
+FIRST pass 4: Expr {num, (}  Expr' {-, ε}  Term {num, (}  Term' {*, ε}  Factor {num, (}
+FIRST passes: 4
+FOLLOW pass 1: Expr {), eof}  Expr' {eof}  Term {-, eof}  Term' {-, eof}  Factor {-, *, eof}
+FOLLOW pass 2: Expr {), eof}  Expr' {), eof}  Term {-, ), eof}  Term' {-, ), eof}  Factor {-, *, ), eof}
+FOLLOW pass 3: Expr {), eof}  Expr' {), eof}  Term {-, ), eof}  Term' {-, ), eof}  Factor {-, *, ), eof}
+FOLLOW passes: 3
+== G3 productions and START ==
+1: Expr → Term Expr'; START {num, (}
+2: Expr' → - Term Expr'; START {-}
+3: Expr' → ε; START {), eof}
+4: Term → Factor Term'; START {num, (}
+5: Term' → * Factor Term'; START {*}
+6: Term' → ε; START {-, ), eof}
+7: Factor → ( Expr ); START {(}
+8: Factor → num; START {num}
+== G3 LL(1) table ==
+row        num     -     *     (     )   eof
+Expr         1     .     .     1     .     .
+Expr'        .     2     .     .     3     3
+Term         4     .     .     4     .     .
+Term'        .     6     5     .     6     6
+Factor       8     .     .     7     .     .
+== G2 conflicting cells ==
+[Expr, num]: 1: Expr → Expr - Term; 2: Expr → Term
+[Expr, (]: 1: Expr → Expr - Term; 2: Expr → Term
+[Term, num]: 3: Term → Term * Factor; 4: Term → Factor
+[Term, (]: 3: Term → Term * Factor; 4: Term → Factor
+== G3 predictive parse (stack top first) ==
+Expr eof | 10 - 4 - 3 * 2 eof | 1: Expr → Term Expr'
+Term Expr' eof | 10 - 4 - 3 * 2 eof | 4: Term → Factor Term'
+Factor Term' Expr' eof | 10 - 4 - 3 * 2 eof | 8: Factor → num
+num Term' Expr' eof | 10 - 4 - 3 * 2 eof | match 10
+Term' Expr' eof | - 4 - 3 * 2 eof | 6: Term' → ε
+Expr' eof | - 4 - 3 * 2 eof | 2: Expr' → - Term Expr'
+- Term Expr' eof | - 4 - 3 * 2 eof | match -
+Term Expr' eof | 4 - 3 * 2 eof | 4: Term → Factor Term'
+Factor Term' Expr' eof | 4 - 3 * 2 eof | 8: Factor → num
+num Term' Expr' eof | 4 - 3 * 2 eof | match 4
+Term' Expr' eof | - 3 * 2 eof | 6: Term' → ε
+Expr' eof | - 3 * 2 eof | 2: Expr' → - Term Expr'
+- Term Expr' eof | - 3 * 2 eof | match -
+Term Expr' eof | 3 * 2 eof | 4: Term → Factor Term'
+Factor Term' Expr' eof | 3 * 2 eof | 8: Factor → num
+num Term' Expr' eof | 3 * 2 eof | match 3
+Term' Expr' eof | * 2 eof | 5: Term' → * Factor Term'
+* Factor Term' Expr' eof | * 2 eof | match *
+Factor Term' Expr' eof | 2 eof | 8: Factor → num
+num Term' Expr' eof | 2 eof | match 2
+Term' Expr' eof | eof | 6: Term' → ε
+Expr' eof | eof | 3: Expr' → ε
+eof | eof | accept

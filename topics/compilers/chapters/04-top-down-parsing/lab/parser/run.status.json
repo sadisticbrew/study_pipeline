@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "exit": 0,
+  "expect": "success",
+  "runner": "local",
+  "duration_s": 3.8,
+  "hash": "a51be9731720544c762a6ce3bb281926973fd478cb6b4fe9dd03410b71d50d3a",
+  "ran_at": "2026-10-17T16:15:41Z",
+  "timed_out": false
+}

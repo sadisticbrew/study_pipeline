@@ -21,7 +21,7 @@
     - Regular expressions and NFAs through Thompson's construction
     - Subset construction to a DFA, and DFA minimization
     - Hand-written lexers in production (Go's scanner) versus generated ones (flex, re2c)
-4. **Grammars and top-down parsing** [pending]
+4. **Grammars and top-down parsing** [done]
     - Context-free grammars, derivations, parse trees and ambiguity
     - Encoding precedence and associativity, and eliminating left recursion
     - LL(1): FIRST and FOLLOW sets, predictive parsing and recursive descent
@@ -130,4 +130,4 @@
     - Clang, LLVM and rustc: driver architecture and query-based incremental compilation
     - How practitioners work: reading IR dumps, bisecting miscompiles, benchmarking and contributing
 
-Progress: 3 of 23 chapters done or known.
+Progress: 4 of 23 chapters done or known.

@@ -1,0 +1,38 @@
+digraph {
+ordering=out;
+node [width=0.3, height=0.3, margin=0.03];
+subgraph cluster_0 {
+label="E → num E', E' → - num E' | ε";
+n0 [label="E"];
+n1 [label="10"];
+n0 -> n1;
+n2 [label="E'"];
+n3 [label="-"];
+n2 -> n3;
+n4 [label="4"];
+n2 -> n4;
+n5 [label="E'"];
+n6 [label="-"];
+n5 -> n6;
+n7 [label="3"];
+n5 -> n7;
+n8 [label="E'"];
+n9 [label="ε"];
+n8 -> n9;
+n5 -> n8;
+n2 -> n5;
+n0 -> n2;
+}
+subgraph cluster_1 {
+label="tree the loop builds";
+n10 [label="-"];
+n11 [label="-"];
+n12 [label="10"];
+n11 -> n12;
+n13 [label="4"];
+n11 -> n13;
+n10 -> n11;
+n14 [label="3"];
+n10 -> n14;
+}
+}

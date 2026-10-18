@@ -10,15 +10,25 @@
 
 **alternation** (chapter 3). The regular expression operation that matches anything either of two patterns matches.
 
+**ambiguous grammar** (chapter 4). A grammar under which some sentence has more than one leftmost derivation, or equivalently more than one parse tree.
+
 **argument register** (chapter 2). The registers a calling convention assigns to pass a function's first arguments.
 
 **assembler** (chapter 1). A program that turns assembly language text into machine code.
 
 **assembly language** (chapter 1). A text form of machine instructions that maps almost directly onto the bytes the processor runs.
 
+**associativity** (chapter 4). The rule that decides how a run of operators of equal precedence groups, from the left or from the right.
+
 **AT&T syntax** (chapter 2). The assembly syntax GNU tools use by default, with the source operand first and size suffixes on many mnemonics.
 
 **back end** (chapter 1). The part of a compiler that turns the intermediate representation into instructions for one particular target machine.
+
+**backtrack-free grammar** (chapter 4). A grammar in which, for every nonterminal, the START sets of its alternatives do not overlap.
+
+**binding power** (chapter 4). A number saying how tightly an operator holds its operands, so that a higher number groups first.
+
+**BNF** (chapter 4). Backus-Naur Form, the plain notation for context-free productions.
 
 **bootstrapping** (chapter 1). Building a compiler using an earlier compiler, so that a language's compiler can eventually be built from itself.
 
@@ -36,17 +46,31 @@
 
 **conditional jump** (chapter 2). A jump that changes %rip only if its condition holds, usually a test of flag bits, and otherwise falls through to the next instruction.
 
+**context-free grammar** (chapter 4). A set of rewriting rules, each replacing one named kind of phrase by a sequence of tokens and phrase names, together with a starting phrase name.
+
+**dangling else** (chapter 4). The ambiguity in which an else after two nested ifs could belong to either one.
+
+**derivation** (chapter 4). A sequence of strings that starts with the start symbol and turns each string into the next by rewriting one nonterminal with one of its productions.
+
 **DFA** (chapter 3). A finite automaton in which every state has at most one transition for each input character, so the next state is never in doubt.
 
 **DFA minimization** (chapter 3). Merging the states of a DFA that no input string can tell apart, giving the smallest equivalent DFA.
 
 **disassembler** (chapter 2). A tool that turns machine code bytes back into assembly text.
 
+**EBNF** (chapter 4). Extended Backus-Naur Form, a grammar notation that adds optional parts and repetition to plain productions.
+
 **epilogue** (chapter 2). The instructions at the end of a function that tear down its stack frame and return.
 
 **finite automaton** (chapter 3). A machine with a fixed set of states, a start state, accepting states and labelled transitions, which reads its input one character at a time.
 
+**FIRST set** (chapter 4). For a grammar symbol or sequence, the set of terminals that can begin a string derived from it, plus ε if it can derive the empty string.
+
+**fixed point** (chapter 4). A state that one more round of a repeated update leaves unchanged.
+
 **flags register** (chapter 2). A register whose status bits record facts about arithmetic or compare results, such as whether they were zero or negative.
+
+**FOLLOW set** (chapter 4). For a nonterminal, the set of terminals, plus eof, that can appear immediately after a string derived from it.
 
 **frame pointer** (chapter 2). A register, usually %rbp, that holds a fixed address inside the current frame so locals can be found at constant offsets from it.
 
@@ -66,6 +90,10 @@
 
 **kleene star** (chapter 3). The regular expression operation that matches zero or more repetitions of a pattern.
 
+**left recursion** (chapter 4). A nonterminal deriving, in one or more steps, a sequence beginning with itself, directly or through other rules.
+
+**leftmost derivation** (chapter 4). A derivation that rewrites the leftmost nonterminal at each step.
+
 **lexeme** (chapter 3). The exact characters from the source that make up one token.
 
 **lexer** (chapter 3). The compiler phase that reads source characters and produces a stream of tokens, also called a scanner.
@@ -75,6 +103,10 @@
 **linker** (chapter 1). A program that combines object files and libraries into an executable or library, connecting references between them.
 
 **little-endian** (chapter 2). Storing a multi-byte value with its least significant byte at the lowest address.
+
+**LL(1)** (chapter 4). Parsed by scanning the input Left to right, building a Leftmost derivation, with 1 token of lookahead.
+
+**lookahead** (chapter 4). The next unread token, which the parser examines to choose a production.
 
 **machine stack** (chapter 2). A region of ordinary memory that functions use for return addresses, saved registers and local variables, growing and shrinking as calls happen.
 
@@ -86,9 +118,25 @@
 
 **NFA** (chapter 3). A finite automaton that may have several transitions for the same character from one state, and that accepts a string if some way of following its arrows while reading it ends in an accepting state.
 
+**nonterminal** (chapter 4). A grammar symbol that names a kind of phrase and is rewritten by the grammar's rules.
+
 **object file** (chapter 1). A file containing machine code and linking information, not yet combined with the other pieces it needs to run.
 
+**parse tree** (chapter 4). A tree whose inner nodes are nonterminals, each with the right side of the production that rewrote it as its children, and whose leaves are tokens (or ε for an empty production).
+
+**parser** (chapter 4). The compiler phase that reads the token stream and builds the tree that shows how the tokens group into phrases.
+
+**pratt parsing** (chapter 4). Parsing expressions with one loop that compares the binding power of each operator it meets against a minimum passed down by its caller.
+
+**precedence** (chapter 4). The rule that decides which of two different operators takes its operands first, as when multiplication groups before subtraction.
+
+**precedence climbing** (chapter 4). Parsing expressions by a loop that absorbs operators whose precedence is at least a minimum and parses each right operand with a minimum chosen for its associativity.
+
+**production** (chapter 4). One grammar rule, saying that the nonterminal on its left may be replaced by the sequence of symbols on its right.
+
 **prologue** (chapter 2). The instructions at the start of a function that set up its stack frame.
+
+**recursive descent** (chapter 4). A parsing method built from one procedure per nonterminal, each recognising its nonterminal and calling the others for the nonterminals in its productions.
 
 **red zone** (chapter 2). The 128 bytes below %rsp that System V guarantees no signal handler will overwrite, usable by a function as scratch space.
 
@@ -114,17 +162,25 @@
 
 **stack-machine code generation** (chapter 1). Generating code that keeps every intermediate result on a stack, pushing operands and popping them when an operation needs them.
 
+**START set** (chapter 4). For a production, the FIRST set of its right side without ε, plus the FOLLOW set of its left side if the right side can be empty.
+
+**start symbol** (chapter 4). The nonterminal every derivation of a whole program begins from.
+
 **state** (chapter 3). One situation a machine can be in, standing for everything it needs to remember about the characters read so far.
 
 **subset construction** (chapter 3). The algorithm that builds a DFA whose states are the sets of NFA states reachable on some input.
 
 **target language** (chapter 1). The language a compiler writes its output program in.
 
+**terminal** (chapter 4). A grammar symbol that stands for a token kind and is never rewritten.
+
 **thompson’s construction** (chapter 3). A method that builds an NFA from a regular expression by combining one small NFA fragment per operator.
 
 **token** (chapter 3). One meaningful unit of source text, represented here by its category together with the text it came from.
 
 **token kind** (chapter 3). The category a token belongs to, such as identifier, integer literal or less-or-equal operator.
+
+**top-down parser** (chapter 4). A parser that builds the tree from the root downward, choosing each node's production before reading the tokens that production covers.
 
 **transition** (chapter 3). A rule that moves a machine from one state to another when the next input character is a given one, drawn as a labelled arrow.
 

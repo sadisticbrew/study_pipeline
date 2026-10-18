@@ -65,3 +65,31 @@
 {"term": "transition", "def": "A rule that moves a machine from one state to another when the next input character is a given one, drawn as a labelled arrow.", "chapter": 3}
 {"term": "accepting state", "def": "A state meaning that the characters read so far form a complete string the machine recognises, drawn as a double circle.", "chapter": 3}
 {"term": "finite automaton", "def": "A machine with a fixed set of states, a start state, accepting states and labelled transitions, which reads its input one character at a time.", "chapter": 3}
+{"term": "parser", "def": "The compiler phase that reads the token stream and builds the tree that shows how the tokens group into phrases.", "chapter": 4}
+{"term": "context-free grammar", "def": "A set of rewriting rules, each replacing one named kind of phrase by a sequence of tokens and phrase names, together with a starting phrase name.", "chapter": 4}
+{"term": "terminal", "def": "A grammar symbol that stands for a token kind and is never rewritten.", "chapter": 4}
+{"term": "nonterminal", "def": "A grammar symbol that names a kind of phrase and is rewritten by the grammar's rules.", "chapter": 4}
+{"term": "production", "def": "One grammar rule, saying that the nonterminal on its left may be replaced by the sequence of symbols on its right.", "chapter": 4}
+{"term": "start symbol", "def": "The nonterminal every derivation of a whole program begins from.", "chapter": 4}
+{"term": "derivation", "def": "A sequence of strings that starts with the start symbol and turns each string into the next by rewriting one nonterminal with one of its productions.", "chapter": 4}
+{"term": "leftmost derivation", "def": "A derivation that rewrites the leftmost nonterminal at each step.", "chapter": 4}
+{"term": "parse tree", "def": "A tree whose inner nodes are nonterminals, each with the right side of the production that rewrote it as its children, and whose leaves are tokens (or ε for an empty production).", "chapter": 4}
+{"term": "EBNF", "def": "Extended Backus-Naur Form, a grammar notation that adds optional parts and repetition to plain productions.", "chapter": 4}
+{"term": "BNF", "def": "Backus-Naur Form, the plain notation for context-free productions.", "chapter": 4}
+{"term": "ambiguous grammar", "def": "A grammar under which some sentence has more than one leftmost derivation, or equivalently more than one parse tree.", "chapter": 4}
+{"term": "dangling else", "def": "The ambiguity in which an else after two nested ifs could belong to either one.", "chapter": 4}
+{"term": "precedence", "def": "The rule that decides which of two different operators takes its operands first, as when multiplication groups before subtraction.", "chapter": 4}
+{"term": "associativity", "def": "The rule that decides how a run of operators of equal precedence groups, from the left or from the right.", "chapter": 4}
+{"term": "top-down parser", "def": "A parser that builds the tree from the root downward, choosing each node's production before reading the tokens that production covers.", "chapter": 4}
+{"term": "left recursion", "def": "A nonterminal deriving, in one or more steps, a sequence beginning with itself, directly or through other rules.", "chapter": 4}
+{"term": "lookahead", "def": "The next unread token, which the parser examines to choose a production.", "chapter": 4}
+{"term": "FIRST set", "def": "For a grammar symbol or sequence, the set of terminals that can begin a string derived from it, plus ε if it can derive the empty string.", "chapter": 4}
+{"term": "fixed point", "def": "A state that one more round of a repeated update leaves unchanged.", "chapter": 4}
+{"term": "FOLLOW set", "def": "For a nonterminal, the set of terminals, plus eof, that can appear immediately after a string derived from it.", "chapter": 4}
+{"term": "START set", "def": "For a production, the FIRST set of its right side without ε, plus the FOLLOW set of its left side if the right side can be empty.", "chapter": 4}
+{"term": "backtrack-free grammar", "def": "A grammar in which, for every nonterminal, the START sets of its alternatives do not overlap.", "chapter": 4}
+{"term": "LL(1)", "def": "Parsed by scanning the input Left to right, building a Leftmost derivation, with 1 token of lookahead.", "chapter": 4}
+{"term": "recursive descent", "def": "A parsing method built from one procedure per nonterminal, each recognising its nonterminal and calling the others for the nonterminals in its productions.", "chapter": 4}
+{"term": "pratt parsing", "def": "Parsing expressions with one loop that compares the binding power of each operator it meets against a minimum passed down by its caller.", "chapter": 4}
+{"term": "binding power", "def": "A number saying how tightly an operator holds its operands, so that a higher number groups first.", "chapter": 4}
+{"term": "precedence climbing", "def": "Parsing expressions by a loop that absorbs operators whose precedence is at least a minimum and parses each right operand with a minimum chosen for its associativity.", "chapter": 4}

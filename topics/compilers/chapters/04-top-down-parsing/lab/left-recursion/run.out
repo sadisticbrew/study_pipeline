@@ -1,0 +1,9 @@
+== Go ==
+go version go1.27.1-X:nodwarf5 linux/amd64
+== Naive parser (default goroutine stack limit) ==
+runtime: goroutine stack exceeds 1000000000-byte limit
+fatal error: stack overflow
+exit status: 2
+== Loop parser ==
+tree: ((10 - 4) - (3 * 2))
+value: 0

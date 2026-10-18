@@ -1,0 +1,37 @@
+== Go ==
+go version go1.27.1-X:nodwarf5 linux/amd64
+== Pratt trace ==
+call 1 min=1: operand 10
+call 1 min=1: see - bp=4 absorb
+call 2 min=5: operand 4
+call 2 min=5: see - bp=4 return
+call 1 min=1: see - bp=4 absorb
+call 3 min=5: operand 3
+call 3 min=5: see * bp=5 absorb
+call 4 min=6: operand 2
+call 4 min=6: see EOF bp=0 return
+call 3 min=5: see EOF bp=0 return
+call 1 min=1: see EOF bp=0 return
+== Expression trees ==
+10 - 4 - 3 * 2 => (- (- 10 4) (* 3 2))
+-2 * 3 => (* (neg 2) 3)
+a < b == c => (== (< a b) c)
+f(1, 2 + 3) * 4 => (* (call f 1 (+ 2 3)) 4)
+10 - (4 - 3) * 2 => (- 10 (* (- 4 3) 2))
+== Recursive-descent choices ==
+program: lookahead if -> Stmt
+parseStmt: lookahead if -> IfStmt
+parseBlock: lookahead { -> "{" { Stmt } "}"
+parseBlock: lookahead IDENT -> Stmt
+parseStmt: lookahead IDENT -> IDENT "=" Expr ";"
+parseBlock: lookahead } -> "}"
+parseIf: lookahead EOF -> ε
+tree: (program (if (<= x1 10) (block (= y (* x1 2)))))
+== Function tree ==
+(program (func max (params a b) (block (if (> a b) (block (return a)) (block (return b))))))
+== Positioned syntax errors ==
+x = (1 + 2; => 1:11: expected ); found ; ";"
+if x { y = ; } => 1:12: expected INT, IDENT, (, -; found ; ";"
+== go/parser comparison ==
+ours:      (- (- 10 4) (* 3 2))
+go/parser: (- (- 10 4) (* 3 2))
