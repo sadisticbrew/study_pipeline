@@ -1,9 +1,7 @@
 # Study pipeline model routing. Agents in .omp/agents/ refer to these roles.
 # /bakeoff pick updates sp_writer, and sp_checker when it would share a family with the writer.
-# Thinking is low for the writer on purpose. At high, the writer spent about 13 minutes
-# drafting the chapter in hidden reasoning before writing a word. The brief is the plan.
-# deepseek-v4.1-flash offers only low, high and max (`omp models opencode-go`); medium ran as low.
-# [codex] Writer, checker and lab use Anthropic and Codex models until the Codex
+# The writer uses medium reasoning; the chapter brief supplies its plan.
+# [codex] Writer, checker and lab use Codex models until the Codex
 # [codex] subscription ends (about 2026-11-12). Then run `python3 tools/models_opencode.py`.
 modelRoles:
   sp_writer: anthropic/claude-opus-5-5:low
