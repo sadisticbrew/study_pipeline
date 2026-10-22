@@ -11,7 +11,8 @@
 - **Has built:** an OCI container runtime, an eBPF process tracer, an interpreter, a crypto CLI.
 - **Shakier on:** general C and Linux-internals fundamentals — "somewhat okayish," not solid. Don't assume them.
 - **Theory, comfortable with** (self-check, 2026-10-16): set notation, equivalence
-  relations, big-O including amortized analysis, two's complement arithmetic.
+  relations, big-O including amortized analysis, two's complement arithmetic, vectors,
+  matrices, matrix multiplication, numerical precision, basic calculus.
 - **Theory, not yet known, or not taught in college yet:**
   - Proof and logic: proof by induction, including structural induction; statements with
     ∀, ∃ and implication.
