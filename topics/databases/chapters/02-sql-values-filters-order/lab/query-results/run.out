@@ -1,0 +1,46 @@
+Python sqlite3 runtime: 3.54.0
+stored: order_id | buyer | total_cents | discount_cents | status | created_at
+101 | Ada | 1299 | 0 | pending | 2026-10-19T09:00:00Z
+102 | Bea | 1299 | NULL | pending | 2026-10-19T09:05:00Z
+103 | Ada | 2500 | 250 | shipped | 2026-10-19T10:00:00Z
+104 | Cy | 800 | NULL | pending | 2026-10-19T11:00:00Z
+105 | Dee | 1299 | 0 | pending | 2026-10-19T12:00:00Z
+SELECT: order_id | payable_cents
+101 | 1299
+102 | NULL
+103 | 2250
+104 | NULL
+105 | 1299
+SELECT buyer: Ada, Ada, Bea, Cy, Dee
+SELECT DISTINCT buyer: Ada, Bea, Cy, Dee
+conditions: order_id | discount | =0 | NOT(=0) | IS NULL | IS NOT NULL
+101 | 0 | TRUE | FALSE | FALSE | TRUE
+102 | NULL | UNKNOWN | UNKNOWN | TRUE | FALSE
+103 | 250 | FALSE | TRUE | FALSE | TRUE
+104 | NULL | UNKNOWN | UNKNOWN | TRUE | FALSE
+105 | 0 | TRUE | FALSE | FALSE | TRUE
+WHERE =0: 101, 105
+WHERE NOT(=0): 103
+WHERE IS NULL: 102, 104
+WHERE IS NOT NULL: 101, 103, 105
+NULL = NULL | NULL + 1
+NULL | NULL
+pending total DESC (observed tied sequence only): 101:1299, 102:1299, 105:1299, 104:800
+pending total DESC, order_id ASC LIMIT 2: 101:1299, 102:1299
+dashboard: order_id | buyer | payable_cents
+101 | Ada | 1299
+105 | Dee | 1299
+discount ASC default (id:value): 102:NULL, 104:NULL, 101:0, 105:0, 103:250
+discount DESC default (id:value): 103:250, 101:0, 105:0, 102:NULL, 104:NULL
+discount ASC NULLS LAST (id:value): 101:0, 105:0, 103:250, 102:NULL, 104:NULL
+discount DESC NULLS FIRST (id:value): 102:NULL, 104:NULL, 103:250, 101:0, 105:0
+a | b | a AND b | a OR b | NOT a
+TRUE | TRUE | TRUE | TRUE | FALSE
+TRUE | FALSE | FALSE | TRUE | FALSE
+TRUE | UNKNOWN | UNKNOWN | TRUE | FALSE
+FALSE | TRUE | FALSE | TRUE | TRUE
+FALSE | FALSE | FALSE | FALSE | TRUE
+FALSE | UNKNOWN | FALSE | UNKNOWN | TRUE
+UNKNOWN | TRUE | UNKNOWN | TRUE | UNKNOWN
+UNKNOWN | FALSE | FALSE | UNKNOWN | UNKNOWN
+UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN

@@ -1,0 +1,575 @@
+{
+  "slug": "databases",
+  "title": "Databases: SQL to Systems Internals",
+  "created": "2026-10-19",
+  "goal": "Build an intuitive, implementation-grounded understanding of databases for backend and infrastructure work, starting with no database implementation knowledge. By the end, the learner will be able to model data and write precise SQL, integrate PostgreSQL safely with Go, reason about transaction boundaries and concurrent invariants, trace pages, B+ trees, log-structured storage, query operators, WAL, locks, and MVCC, diagnose query and workload performance using measurements, and rehearse live migrations and verified restores. They will also be able to reason about replication lag, failover, sharding, and distributed commit, and choose between transactional and analytical engines from workload evidence rather than slogans. Unfamiliar graph, Boolean, statistical, storage, and distributed-systems prerequisites are taught where first needed; 22 focused chapters of 2500–3500 words support steady study alongside compilers rather than compressing this breadth into oversized chapters.",
+  "lab": {
+    "runner": "local",
+    "toolchains": [
+      "python3",
+      "go",
+      "sqlite3",
+      "psql",
+      "initdb",
+      "pg_ctl",
+      "pgbench"
+    ],
+    "notes": "Use the working bubblewrap local sandbox; no host root, system service changes, or kernel runner is needed. Begin with Python's standard-library sqlite3 and the SQLite CLI. Use tiny Python page/index/log models and explicit transaction traces for internals, then temporary unprivileged PostgreSQL clusters with Unix sockets and isolated data directories for Go clients, concurrency, query plans, migrations, workload experiments, replication, and restore drills. Pin PostgreSQL behavior to the version actually used, and label SQLite differences. Go database drivers must be pinned and made available for sandbox runs; enable lab network only for an explicitly needed dependency fetch. Doctor at topic creation found python3, go, sqlite3 and a working local sandbox; psql, initdb, pg_ctl and pgbench are missing. Install the PostgreSQL toolchain on CachyOS with `sudo pacman -S --needed postgresql` before PostgreSQL chapters, then rerun the doctor. No fixed benchmark timings or output are promised."
+  },
+  "parts": [
+    {
+      "title": "From application data to SQL",
+      "chapters": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "title": "Schema and application correctness",
+      "chapters": [
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "title": "How a single-node engine works",
+      "chapters": [
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    {
+      "title": "Crashes and concurrent transactions",
+      "chapters": [
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "title": "Operating a live database",
+      "chapters": [
+        17,
+        18,
+        19
+      ]
+    },
+    {
+      "title": "Distribution and engine tradeoffs",
+      "chapters": [
+        20,
+        21,
+        22
+      ]
+    }
+  ],
+  "chapters": [
+    {
+      "n": 1,
+      "slug": "why-databases",
+      "title": "Why data needs a database",
+      "part": 0,
+      "core_ideas": [
+        "Start with a small backend's records in files, and trace the update, lookup, and partial-failure problems that motivate a database.",
+        "Build the table, row, column, and concrete value-type model from that example, without assuming relational terminology.",
+        "Introduce stable identifiers, primary and foreign keys, and simple constraints as ways to preserve the example's meaning.",
+        "Create a tiny SQLite database and trace CREATE TABLE, INSERT, and SELECT, distinguishing the database, engine, SQL language, and client."
+      ],
+      "prereqs": [
+        "Basic variables, functions, loops, and collections in Python or Go from the learner profile.",
+        "Ability to run a command in a Linux shell. No SQL, database implementation, or mathematical logic knowledge is assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "known",
+      "quiz": null
+    },
+    {
+      "n": 2,
+      "slug": "sql-values-filters-order",
+      "title": "SQL values, filters, and ordered results",
+      "part": 0,
+      "core_ideas": [
+        "Evaluate SELECT expressions and WHERE conditions row by row, explaining duplicate-preserving results and DISTINCT rather than silently assuming mathematical sets.",
+        "Teach Boolean conditions and NULL's true, false, and unknown outcomes with concrete truth tables, including IS NULL and why comparisons can discard rows.",
+        "Make result ordering explicit with ORDER BY, tie-breaking, LIMIT, and the boundary between a deterministic result and an accidental row order.",
+        "Choose and compare integer, exact numeric, text, and time representations, teaching precision and conversion pitfalls through small examples and labeling SQLite/PostgreSQL differences."
+      ],
+      "prereqs": [
+        "Tables, rows, keys, simple value types, and first CREATE/INSERT/SELECT statements from chapter 1.",
+        "Basic arithmetic and comparisons in a programming language. Boolean SQL conditions, NULL, numeric precision, and time conventions are taught here."
+      ],
+      "words": [
+        2500,
+        4500
+      ],
+      "status": "done",
+      "quiz": null
+    },
+    {
+      "n": 3,
+      "slug": "joins-and-multiplicity",
+      "title": "Joins: combining rows without surprises",
+      "part": 0,
+      "core_ideas": [
+        "Construct a join by enumerating row pairs and applying the join condition before introducing the terminology.",
+        "Trace inner and left outer joins, including unmatched rows, NULL extension, and the difference between filtering in ON and WHERE.",
+        "Reason about one-to-one, one-to-many, and many-to-many matches, output cardinality, and accidental duplicate multiplication.",
+        "Express existence and absence with EXISTS and NOT EXISTS, and expose the NULL trap in NOT IN with the same running example."
+      ],
+      "prereqs": [
+        "Keys and relationships from chapter 1.",
+        "SQL filtering, duplicates, NULL conditions, and ordered results from chapter 2. No prior join or relational-algebra knowledge is assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 4,
+      "slug": "grouping-subqueries-windows",
+      "title": "Grouping, subqueries, and windowed results",
+      "part": 0,
+      "core_ideas": [
+        "Build groups from a row trace, then apply aggregate functions and HAVING, explicitly covering empty inputs and COUNT's treatment of NULL.",
+        "Use scalar and correlated subqueries to express dependent questions, including multiple-row scalar errors and correlation scope.",
+        "Name intermediate query results with nonrecursive common table expressions and explain logical query stages without promising a physical execution order.",
+        "Contrast windowed aggregates and ranking with GROUP BY, tracing partitions, ordering, ties, and an explicit simple frame."
+      ],
+      "prereqs": [
+        "SELECT expressions, NULL, ordering, and duplicate behavior from chapter 2.",
+        "Joins, row multiplicity, and simple existence subqueries from chapter 3. Grouping, general subqueries, common table expressions, and windows are introduced here."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 5,
+      "slug": "schema-design",
+      "title": "Designing schemas that preserve meaning",
+      "part": 1,
+      "core_ideas": [
+        "Translate business facts into entities, keys, relationships, and invariants using the running backend example.",
+        "Derive functional dependencies and useful normalization through third normal form from insertion, deletion, and update anomalies, explaining the notation and checking a concrete decomposition.",
+        "Place NOT NULL, CHECK, UNIQUE, and foreign-key constraints deliberately, including relationship cardinality and deletion policies.",
+        "Distinguish authoritative facts from derived data and justify denormalization only against a concrete workload and consistency-maintenance cost."
+      ],
+      "prereqs": [
+        "Tables, keys, and constraints from chapter 1; SQL value and NULL behavior from chapter 2.",
+        "Joining related tables and querying aggregates from chapters 3–4.",
+        "Basic set notation from the learner profile. Functional dependencies and normalization are taught here, not assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 6,
+      "slug": "transaction-boundaries",
+      "title": "Transactions as application boundaries",
+      "part": 1,
+      "core_ideas": [
+        "Trace BEGIN, COMMIT, ROLLBACK, and autocommit through a multi-statement business operation.",
+        "Explain atomicity, consistency, isolation, and durability from concrete failures, carefully separating application invariants from the guarantees the engine supplies.",
+        "Separate a known rollback from a connection loss with an unknown commit outcome, motivating operation identity without yet assuming a retry protocol.",
+        "Choose short transaction boundaries and trace two interleaved requests to motivate the concurrency mechanisms taught in chapters 14–16."
+      ],
+      "prereqs": [
+        "Updates to related rows and business invariants from chapters 1 and 5.",
+        "SQL conditions and constraints from chapters 2–5. Transactions, concurrent schedules, ACID, and distributed failure outcomes are not assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 7,
+      "slug": "go-database-clients",
+      "title": "Using SQL safely from Go",
+      "part": 1,
+      "core_ideas": [
+        "Introduce the client/server connection and session model, contrasting an embedded SQLite engine with a PostgreSQL server and explaining request/response boundaries.",
+        "Bind values as parameters, distinguish data from SQL syntax and identifiers, and demonstrate the actual boundary that prevents SQL injection.",
+        "Use Go database/sql with a PostgreSQL driver to handle row scanning, NULL, result and connection ownership, iteration errors, and transaction cleanup.",
+        "Teach connection pools and transaction-scoped connections, context deadlines and cancellation, and how a timed-out request relates to the transaction outcome."
+      ],
+      "prereqs": [
+        "Go variables, functions, types, interfaces, and error handling from the learner's main language.",
+        "Practical SQL and schema constraints from chapters 1–5; transaction boundaries and uncertain commit outcomes from chapter 6.",
+        "Client/server sessions, driver behavior, pools, and database-related context handling are taught here."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 8,
+      "slug": "pages-and-buffer-pools",
+      "title": "From rows to pages and the buffer pool",
+      "part": 2,
+      "core_ideas": [
+        "Bridge from files and bytes to fixed-size database pages, explaining volatile memory, persistent storage, byte encodings, and why reads and writes happen in chunks.",
+        "Lay out records in a page using slots, identifiers, and free space, tracing an insertion and a variable-length update.",
+        "Follow a page through a buffer pool, introducing pins, dirty pages, eviction, and the distinction between database buffering and the operating system's page cache.",
+        "Count page accesses and explain locality and sequential versus scattered I/O before using them as performance arguments."
+      ],
+      "prereqs": [
+        "Rows and value representations from chapters 1–2; the embedded/client-server distinction from chapter 7.",
+        "Basic programming arrays and arithmetic. Database pages, binary record layouts, storage costs, and buffer pools are all introduced here; Linux implementation details are not assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 9,
+      "slug": "bplus-tree-indexes",
+      "title": "B+ trees and the cost of an index",
+      "part": 2,
+      "core_ideas": [
+        "Teach root, node, edge, leaf, path, and branching through an ordered lookup example, including the comparisons made during a search.",
+        "Build a page-shaped B+ tree, then trace a point lookup, a linked-leaf range scan, and an insertion that splits a page.",
+        "Relate index entries to stored rows, contrasting heap and clustered layouts and explaining composite key ordering and covering access.",
+        "Measure the read benefit against index maintenance, extra writes, page splits, and space, rather than treating an index as an unconditional improvement."
+      ],
+      "prereqs": [
+        "Pages, record slots, row locations, locality, and buffer pools from chapter 8.",
+        "SQL filtering, sorting, keys, and joins from chapters 1–3; big-O from the learner profile.",
+        "No graph theory, tree algorithms, or binary-search background is assumed; the needed search and tree concepts are taught here."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 10,
+      "slug": "lsm-storage-compaction",
+      "title": "Log-structured storage and compaction",
+      "part": 2,
+      "core_ideas": [
+        "Derive append-oriented writes, ordered in-memory tables, and immutable sorted files from the cost of scattered page updates, keeping crash recovery for chapter 13.",
+        "Trace reads across memory and sorted files, resolving key versions and deletion tombstones without confusing them with transaction visibility.",
+        "Merge concrete sorted runs to explain compaction and read, write, and space amplification, including why deletions cannot be discarded arbitrarily.",
+        "Introduce hashing, bit arrays, and false-positive examples before a Bloom filter, showing what a negative or positive answer actually guarantees without assuming probability theory."
+      ],
+      "prereqs": [
+        "Page-I/O costs and memory-versus-storage distinctions from chapter 8.",
+        "Ordered lookup, tree vocabulary, index maintenance costs, and range scans from chapter 9.",
+        "Simple arrays, loops, and big-O from the profile. Hashing, Bloom filters, compaction, and probability terminology are not assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 11,
+      "slug": "query-execution",
+      "title": "How a database executes a query",
+      "part": 2,
+      "core_ideas": [
+        "Turn a familiar SQL query into an operator tree and follow rows through scans, filters, and projections, distinguishing logical meaning from physical execution.",
+        "Trace nested-loop, hash, and merge joins on tiny inputs, teaching the needed hash-table and ordered-merge mechanisms before comparing their costs.",
+        "Implement the idea of sorting and grouped aggregation from concrete row flows, comparing ordered processing with hash-based grouping.",
+        "Follow an operator past its memory budget into external sorting or hash partition spills, accounting for additional page I/O."
+      ],
+      "prereqs": [
+        "Join and aggregation semantics from chapters 3–4.",
+        "Pages and buffer costs from chapter 8; tree vocabulary and ordered access from chapter 9; hashing and sorted-run merging from chapter 10.",
+        "Loops, collections, and big-O from the profile. Query operators and external-memory algorithms are taught here."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 12,
+      "slug": "query-plans-and-costs",
+      "title": "Choosing and reading query plans",
+      "part": 2,
+      "core_ideas": [
+        "Compare sequential, index, and index-only access with concrete page and row work rather than assuming the indexed plan wins.",
+        "Introduce counts, proportions, selectivity, skew, and histograms from example data before using cardinality estimates or simplifying independence assumptions.",
+        "Compare alternative join orders and physical operators with a small cost calculation, explaining plan search without assuming dynamic programming or optimization theory.",
+        "Read PostgreSQL EXPLAIN and EXPLAIN ANALYZE, separating estimates from measured rows, loops, time, and buffers, then diagnose one bad estimate and one unsuitable access path."
+      ],
+      "prereqs": [
+        "SQL meaning and row multiplicity from chapters 2–4.",
+        "Storage and index costs from chapters 8–10; execution operators and spills from chapter 11.",
+        "Basic arithmetic and big-O. Statistics, probability, histograms, cost models, and query-plan notation are not assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 13,
+      "slug": "wal-crash-recovery",
+      "title": "Durability, write-ahead logs, and crash recovery",
+      "part": 3,
+      "core_ideas": [
+        "Trace a crash through application memory, database buffers, operating-system buffers, and stable storage, introducing flush and ordering guarantees explicitly.",
+        "Derive write-ahead logging from an interrupted update and explain WAL-before-data, commit records, redo, and undo without claiming every engine uses the same recovery design.",
+        "Trace a checkpoint and restart recovery on a small log, distinguishing shorter recovery from permission to discard still-needed log records.",
+        "Account for incomplete log records, torn page writes, and storage assumptions using clearly labeled PostgreSQL and SQLite mechanisms."
+      ],
+      "prereqs": [
+        "Atomicity, durability, commit, and rollback from chapter 6.",
+        "Pages, dirty buffers, byte layouts, and the operating-system page-cache distinction from chapter 8; append-oriented records from chapter 10.",
+        "No filesystem crash-consistency, fsync, WAL, or recovery-algorithm knowledge is assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 14,
+      "slug": "schedules-locks-deadlocks",
+      "title": "Concurrent transactions: schedules, locks, and deadlocks",
+      "part": 3,
+      "core_ideas": [
+        "Trace interleaved reads and writes and compare them with serial outcomes, introducing conflicts and conflict serializability from the observed dependencies.",
+        "Teach directed dependency edges, paths, and cycles on those same schedules before using a dependency graph to explain a serialization failure.",
+        "Derive shared and exclusive locks and two-phase locking from the conflicts, separating transaction-duration locking from short internal page protection.",
+        "Build a wait-for cycle from blocked requests, then explain deadlock detection, victim rollback, and consistent lock ordering."
+      ],
+      "prereqs": [
+        "Transaction boundaries, invariants, and simple request interleavings from chapter 6.",
+        "Page access from chapter 8 and transaction rollback from chapter 13.",
+        "The node/edge/path vocabulary introduced in chapter 9 is available; directed graphs, cycles, serializability, deadlocks, and two-phase locking are taught here."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 15,
+      "slug": "mvcc-snapshots-cleanup",
+      "title": "MVCC: versions, snapshots, and cleanup",
+      "part": 3,
+      "core_ideas": [
+        "Build a version chain from successive row updates and teach the information needed to decide whether a transaction may see each version.",
+        "Trace statement snapshots and transaction snapshots, explaining how the same query can see different committed states under different policies.",
+        "Separate reader/writer coexistence from writer/writer conflicts, tracing update waits and distinguishing snapshots from a promise of serializable behavior.",
+        "Explain old-version retention, long-running transactions, vacuum, and bloat from the oldest still-needed snapshot, connecting logical cleanup to physical page reuse."
+      ],
+      "prereqs": [
+        "Transaction outcomes from chapters 6 and 13.",
+        "Row/page layout from chapter 8; interleaved schedules, dependencies, locking, and rollback from chapter 14.",
+        "MVCC, version visibility, snapshots, and vacuum are introduced here rather than assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 16,
+      "slug": "isolation-and-correct-applications",
+      "title": "Isolation levels and correct concurrent applications",
+      "part": 3,
+      "core_ideas": [
+        "Use concrete schedules to distinguish lost updates, nonrepeatable reads, phantoms, and write skew, reusing the transaction and snapshot traces rather than relying on names alone.",
+        "Compare PostgreSQL READ COMMITTED, REPEATABLE READ, and SERIALIZABLE guarantees and label which differences are implementation-specific rather than universal SQL promises.",
+        "Choose atomic SQL updates, explicit row locks, constraints, or serializable transactions for a stated invariant, introducing predicate conflicts and serialization detection at the mechanism level needed to explain aborts.",
+        "Implement bounded whole-transaction retries only for appropriate outcomes, separating retryable serialization failures, idempotent application operations, and unknown commit results."
+      ],
+      "prereqs": [
+        "Application invariants and constraints from chapter 5; transaction boundaries and unknown outcomes from chapter 6; Go transaction and error handling from chapter 7.",
+        "Recovery and rollback from chapter 13; conflict schedules and directed cycles from chapter 14; snapshots and version visibility from chapter 15.",
+        "Formal proofs and isolation-level terminology are not assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 17,
+      "slug": "live-schema-changes",
+      "title": "Changing schemas without breaking live applications",
+      "part": 4,
+      "core_ideas": [
+        "Observe the locks and validation work caused by a schema change and explain how a seemingly small DDL statement can block a live workload.",
+        "Trace an expand, backfill, and contract migration across overlapping application versions while preserving a stated schema invariant.",
+        "Plan bounded backfills, staged constraint validation, and online index changes, including the actual PostgreSQL restrictions and remaining blocking points.",
+        "Separate transactional rollback from operational reversal after data or application changes, and rehearse a safe migration against concurrent clients."
+      ],
+      "prereqs": [
+        "Schema design and constraints from chapter 5; client connection and transaction lifecycle from chapters 6–7.",
+        "Index maintenance from chapter 9; crash recovery from chapter 13; locks, version retention, and concurrency guarantees from chapters 14–16.",
+        "Online DDL and migration rollout techniques are taught here."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 18,
+      "slug": "performance-diagnosis",
+      "title": "Measuring and diagnosing database performance",
+      "part": 4,
+      "core_ideas": [
+        "Define a workload and explicitly teach throughput, latency distributions, percentiles, utilization, and queue buildup from measured request timelines.",
+        "Run a small controlled benchmark and read query plans and PostgreSQL activity/statistics while distinguishing cold caches, warm caches, and measurement overhead.",
+        "Diagnose a concrete N+1 request pattern, pagination choice, or missing/ineffective index by counting work and checking an actual plan rather than prescribing settings.",
+        "Identify CPU, memory, storage, lock, and connection saturation and reason about pool size, spills, vacuum, and checkpoint tradeoffs with workload evidence."
+      ],
+      "prereqs": [
+        "Go request lifecycles, pools, and deadlines from chapter 7.",
+        "Storage and access costs, operators, estimates, and EXPLAIN ANALYZE from chapters 8–12; recovery, locks, and vacuum from chapters 13–15.",
+        "Ratios and arithmetic are sufficient; performance statistics, percentiles, and queueing intuition are taught here."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 19,
+      "slug": "backup-restore-access-control",
+      "title": "Backups, restore, and access control",
+      "part": 4,
+      "core_ideas": [
+        "Contrast logical exports with physical base backups, explaining what each captures and what an operationally usable backup requires.",
+        "Trace a base backup plus archived WAL through point-in-time recovery, separating crash restart from recovery after data loss or a mistaken committed write.",
+        "Perform an isolated restore drill and define recovery point and recovery time objectives in terms of data lost and elapsed recovery time.",
+        "Teach roles, ownership, least-privilege grants, authentication, credentials, and transport protection for a backend, separating parameter binding from authorization and backup security."
+      ],
+      "prereqs": [
+        "Schemas and constraints from chapter 5; transaction outcomes and client/server connections from chapters 6–7.",
+        "Pages and persistent storage from chapter 8; WAL, checkpoints, and recovery from chapter 13; workload/resource observations from chapter 18.",
+        "Backup formats, recovery objectives, database roles, and transport-security terminology are introduced here."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 20,
+      "slug": "replication-and-failover",
+      "title": "Replication, stale reads, and failover",
+      "part": 5,
+      "core_ideas": [
+        "Introduce independent processes, delayed messages, disconnections, and uncertain remote outcomes through a two-node timeline before discussing replication protocols.",
+        "Follow WAL positions through leader/follower replication and compare asynchronous and synchronous acknowledgements against a crash at a specific point.",
+        "Trace replica lag and read-after-write failures, then reason about leader reads, routing, and waiting for a known replication position.",
+        "Explain promotion, split brain, fencing, and the need for safe agreement using a concrete majority-intersection example, distinguishing data replication from a leader-election or consensus protocol."
+      ],
+      "prereqs": [
+        "Client/server sessions, request failures, and uncertain commit outcomes from chapters 6–7.",
+        "Logs and durable commit from chapter 13; transaction snapshots and guarantees from chapters 15–16; recoverability and recovery objectives from chapter 19.",
+        "No networking, distributed-systems theory, quorums, or knowledge of the separate Raft topic is assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 21,
+      "slug": "partitioning-sharding-distributed-commit",
+      "title": "Partitioning, sharding, and cross-node transactions",
+      "part": 5,
+      "core_ideas": [
+        "Distinguish partitions inside one database from independently managed shards, then route concrete rows and queries with range and hash keys.",
+        "Choose a partition/shard key by access locality and workload, tracing hot keys, skew, and the effect on indexes and cross-shard query work.",
+        "Move a key range between owners step by step to explain resharding, concurrent writes, and ownership handoff without assuming a rebalancing protocol.",
+        "Trace prepare and commit across two shards, including a failed coordinator and in-doubt participants, to explain two-phase commit's atomicity and availability limits without conflating it with two-phase locking or consensus."
+      ],
+      "prereqs": [
+        "Keys, relationships, and business invariants from chapter 5; SQL joins and aggregation from chapters 3–4.",
+        "Hashing and storage indexes from chapters 9–10; recovery and concurrent transaction guarantees from chapters 13–16; skew and workload measurements from chapter 18.",
+        "Independent-node failures, logs, replication, and agreement boundaries from chapter 20. Partitioning, sharding, resharding, and distributed commit are taught here."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 22,
+      "slug": "row-column-engine-tradeoffs",
+      "title": "Row stores, column stores, and choosing an engine",
+      "part": 5,
+      "core_ideas": [
+        "Contrast small transactional reads and updates with analytical scans and aggregations using the same dataset and explicit access patterns.",
+        "Derive column-oriented layout, simple dictionary/run-length compression, and batched execution from the unnecessary work in a row-oriented analytical scan.",
+        "Compare embedded versus client/server operation and B-tree, LSM, row-store, and column-store tradeoffs using the mechanisms already taught rather than a product-feature survey.",
+        "Evaluate a concrete backend/infrastructure workload with SQLite, PostgreSQL, RocksDB, and DuckDB as bounded examples, stating operational and correctness requirements and validating a choice with a small reproducible experiment."
+      ],
+      "prereqs": [
+        "SQL aggregation and windows from chapter 4; schema and application requirements from chapters 5–7.",
+        "Page layout, B-tree/LSM indexes, execution, and query plans from chapters 8–12; correctness and maintenance from chapters 13–17.",
+        "Workload measurement, restore, replication, and sharding tradeoffs from chapters 18–21. Columnar encoding, compression, analytical execution, and OLTP/OLAP terminology are taught here."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    }
+  ]
+}

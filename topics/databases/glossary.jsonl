@@ -1,0 +1,24 @@
+{"term": "NULL", "def": "A marker that a value is missing rather than zero or empty.", "chapter": 2}
+{"term": "select-list expression", "def": "An expression in the SELECT list that computes an output value.", "chapter": 2}
+{"term": "alias", "def": "A name given to a computed output column.", "chapter": 2}
+{"term": "DISTINCT", "def": "A keyword that removes duplicate answer rows before returning them.", "chapter": 2}
+{"term": "duplicate", "def": "An answer row equal to another under the query's duplicate-comparison rules.", "chapter": 2}
+{"term": "unknown", "def": "The truth value of a test whose answer cannot be decided because an input is missing.", "chapter": 2}
+{"term": "predicate", "def": "A test in WHERE that keeps or discards each candidate row.", "chapter": 2}
+{"term": "truth table", "def": "A table showing the result of AND, OR, or NOT for every input combination.", "chapter": 2}
+{"term": "sort key", "def": "An expression whose values decide the order of the answer rows.", "chapter": 2}
+{"term": "tie-breaker", "def": "A later sort key that orders rows the earlier keys left equal.", "chapter": 2}
+{"term": "LIMIT", "def": "A clause that caps the returned row count, here taking the first N ordered rows.", "chapter": 2}
+{"term": "collation", "def": "The rule a database uses to compare and order text.", "chapter": 2}
+{"term": "storage class", "def": "The actual format SQLite uses for one stored value.", "chapter": 2}
+{"term": "floating point", "def": "A number format that stores an approximation with a fixed count of significant binary digits.", "chapter": 2}
+{"term": "type affinity", "def": "SQLite's preferred storage class for values in a column.", "chapter": 2}
+{"term": "precision", "def": "The total count of significant digits in a numeric value.", "chapter": 2}
+{"term": "scale", "def": "The count of digits after the decimal point in a numeric value.", "chapter": 2}
+{"term": "cast", "def": "An explicit conversion of a value from one type to another.", "chapter": 2}
+{"term": "instant", "def": "One point on the shared global timeline.", "chapter": 2}
+{"term": "UTC", "def": "The shared time reference all zones are measured against.", "chapter": 2}
+{"term": "UTC offset", "def": "The amount added to UTC to get local time, or subtracted to get back.", "chapter": 2}
+{"term": "timestamp", "def": "A date and time value that may describe a clock reading or an instant.", "chapter": 2}
+{"term": "boolean condition", "def": "An expression that evaluates to true, false, or unknown for each row.", "chapter": 2}
+{"term": "integer division", "def": "Division of two integers that returns an integer quotient with the fractional part discarded.", "chapter": 2}

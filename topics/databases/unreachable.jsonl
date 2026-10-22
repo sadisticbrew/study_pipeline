@@ -1,0 +1,6 @@
+{"url": "https://www.postgresql.org/docs/18/planner-statistics.html", "reason": "http-404", "kind": "permanent", "detail": "curl: (22) The requested URL returned error: 404", "at": "2026-10-19T09:54:35+00:00"}
+{"url": "https://www.db-book.com/slides-dir/index.html", "reason": "timed-out", "kind": "network", "detail": "curl: (28) Connection timed out after 10000 milliseconds", "at": "2026-10-19T09:55:52+00:00"}
+{"url": "https://codex.cs.yale.edu/avi/db-book/", "reason": "bad-certificate", "kind": "permanent", "detail": "how to fix it, please visit the webpage mentioned above.", "at": "2026-10-19T09:55:57+00:00"}
+{"url": "https://lamport.azurewebsites.net/pubs/paxos-commit.pdf", "reason": "http-404", "kind": "permanent", "detail": "curl: (22) The requested URL returned error: 404", "at": "2026-10-19T10:03:44+00:00"}
+{"url": "https://lamport.azurewebsites.net/pubs/consensus-on-transaction-commit.pdf", "reason": "timed-out", "kind": "network", "detail": "curl: (28) Connection timed out after 10000 milliseconds", "at": "2026-10-19T10:05:43+00:00"}
+{"url": "https://www.postgresql.org/docs/18/tutorial-null.html", "reason": "http-404", "kind": "permanent", "detail": "curl: (22) The requested URL returned error: 404", "at": "2026-10-19T11:44:33+00:00"}

@@ -1,0 +1,32 @@
+Python sqlite3 runtime: 3.54.0
+order_id | total_cents | discount_cents | payable_cents | typeof(payable)
+101 | 1299 | 0 | 1299 | integer
+103 | 2500 | 250 | 2250 | integer
+105 | 1299 | 0 | 1299 | integer
+1299/100 | typeof | 1299/100.0 | typeof
+12 | integer | 12.99 | real
+0.1+0.2 | 0.3 | equal | typeof(sum)
+0.30000000000000004 | 0.29999999999999999 | 0 | real
+DECIMAL(6,2): order_id | retrieved amount | typeof(amount)
+101 | 12.99 | real
+103 | 25 | integer
+104 | 12x | text
+CAST('12x' AS INTEGER) | typeof
+12 | integer
+max integer | typeof | max integer + 1 | typeof
+9223372036854775807 | integer | 9.2233720368547758e+18 | real
+amount TEXT BINARY ASC: 1299, 2500, 800
+amount TEXT cast INTEGER ASC: 800, 1299, 2500
+raw-text order: label | submitted | normalized UTC
+utc | 2026-10-19T09:00:00Z | 2026-10-19T09:00:00Z
+offset_earlier | 2026-10-19T09:30:00+02:00 | 2026-10-19T07:30:00Z
+offset_same | 2026-10-19T11:00:00+02:00 | 2026-10-19T09:00:00Z
+normalized same-instant equality
+1
+normalized UTC order: offset_earlier, offset_same, utc
+fixed-UTC text ASC: order_id | created_at
+101 | 2026-10-19T09:00:00Z
+102 | 2026-10-19T09:05:00Z
+103 | 2026-10-19T10:00:00Z
+104 | 2026-10-19T11:00:00Z
+105 | 2026-10-19T12:00:00Z
