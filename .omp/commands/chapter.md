@@ -84,10 +84,24 @@ mark them `[@unverified]`.
 
 ## 3. Write
 
+Resolve `VOICE_EXEMPLAR` once: `style/exemplar.md` if it exists, otherwise
+`style/sample/chapter.md`. Read the entire selected file for the comparison below. If it
+cannot be read, stop with a blocked handoff; only absence permits the fallback.
+
 Spawn one `sp-writer` with these paths: `OUTPUT=CD/chapter.md`, `BRIEF=CD/brief.md`,
 `CHAPTER_DIR=CD`, `FACTS=CD/facts.jsonl`, `SOURCES=topics/<slug>/sources.jsonl`,
-`TOPIC_DIR=topics/<slug>`, and `LINT=python3 tools/lint.py CD/chapter.md`. Also pass the
-lab agent's notes (line ranges, and what each output shows) and the unanswered questions.
+`TOPIC_DIR=topics/<slug>`, `VOICE_EXEMPLAR=<resolved path>`, and
+`LINT=python3 tools/lint.py CD/chapter.md`. Also pass the lab agent's notes (line ranges,
+and what each output shows) and the unanswered questions.
+
+Before accepting the draft for checking, inspect the writer's tool transcript for a
+successful read covering the entire resolved `VOICE_EXEMPLAR` before `BRIEF` or drafting.
+A self-report is not evidence. If that read is missing, return to the same writer to
+read it and revise the draft's style, then verify the recorded read.
+Briefly compare the opening and one mechanism-heavy section with the exemplar for pacing,
+connected prose, and explanatory depth. Return concrete style problems to the same writer
+for correction without changing facts or citations, and compare the revised passages
+before proceeding. Lint and claim checking do not establish voice.
 
 ## 4. Check
 
@@ -99,9 +113,11 @@ spawn one `sp-checker` with `MODE=fix`, `CHAPTER=CD/chapter.md`, `CHAPTER_DIR=CD
 ## 5. Final gates
 
 - Run `python3 tools/lint.py CD/chapter.md`. If it reports errors, which usually come from
-  checker edits, spawn `sp-writer` again with the same paths, plus an instruction to fix
-  only the flagged paragraphs, without changing their factual content or citations. Allow
-  at most two rounds. If errors remain, continue, and list them in the report.
+  checker edits, spawn `sp-writer` again with the same paths, explicitly reusing the resolved
+  `VOICE_EXEMPLAR`, plus an instruction to fix only the flagged paragraphs, without changing
+  their factual content or citations. Verify each retry's read and apply the same editorial
+  gate before accepting it. Allow at most two rounds. If errors remain, continue, and list
+  them in the report.
 - Run `python3 tools/lab.py check CD` if the chapter has labs. A stale or failed lab must be
   fixed with `sp-lab` before rendering, because the chapter would otherwise show output
   that does not match its code.

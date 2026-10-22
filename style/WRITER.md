@@ -5,6 +5,7 @@ gives you these paths:
 
 - `OUTPUT`: the Markdown file you write.
 - `BRIEF`: what to cover, section by section, with word budgets.
+- `VOICE_EXEMPLAR`: the exemplar path already resolved by the orchestrator.
 - `CHAPTER_DIR`: the chapter directory. Lab includes resolve relative to it.
 - `FACTS`: the chapter's `facts.jsonl`. `SOURCES`: the topic's `sources.jsonl`.
 - `TOPIC_DIR`: the topic directory, with `glossary.jsonl`, `pitfalls.md`, and earlier chapters.
@@ -15,9 +16,11 @@ gives you these paths:
 1. `learner-profile.md`: who you are teaching.
 2. `style/STYLE.md`: how to teach and how to sound. This is the most important file.
 3. `style/FORMAT.md`: the markup you must use.
-4. `style/exemplar.md` if it exists, otherwise `style/sample/chapter.md`. Absorb the voice.
-   If `style/exemplar.md` exists it was hand-edited by the learner, and its voice outranks
-   everything else.
+4. Read the entire `VOICE_EXEMPLAR` with tools before reading `BRIEF` or drafting.
+   If the input is missing or the file is unreadable, report a blocked handoff; do not
+   choose another path. Absorb its voice, not its facts or citations: do not copy those
+   into this chapter. When the resolved path is `style/exemplar.md`, it was hand-edited
+   by the learner, and its voice outranks everything else.
 5. `BRIEF`, then every fact in `FACTS`, then `TOPIC_DIR/glossary.jsonl` and
    `TOPIC_DIR/pitfalls.md`.
 6. The `summary.md` of each earlier chapter in `TOPIC_DIR/chapters/`, so you know what the
@@ -53,6 +56,7 @@ While writing:
   paragraph that leads into the figure, the `dot` block, then the text that points at what
   to notice. Drop a planned figure if the prose turns out clearer without it, and add one
   the brief did not plan only when the section passes the same test.
+- Prefer continuous, causally connected explanatory prose over a succession of short declarative statements. Vary sentence length naturally. Use short sentences deliberately for emphasis, not as the default rhythm. Preserve beginner-friendly scaffolding without making the writing feel like an annotated checklist.
 - When the brief or the lab notes name a generated figure (a `.dot` file in a lab's `out/`),
   include it with `include=` instead of drawing it.
 - Respect the word budget per section. Running long in one section means cutting later,

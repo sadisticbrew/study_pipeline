@@ -52,11 +52,25 @@ the conversation until `pick`.
 
 ### 3. Write, in parallel
 
+Resolve `VOICE_EXEMPLAR` once: `style/exemplar.md` if it exists, otherwise
+`style/sample/chapter.md`. Read the entire selected file for the comparison below. If it
+cannot be read, stop with a blocked handoff; only absence permits the fallback.
+
 Spawn all four writers in one batch. Each gets `OUTPUT=RUN/<label>.md`, `BRIEF=RUN/brief.md`,
 `CHAPTER_DIR=CD`, `FACTS=CD/facts.jsonl`, `SOURCES=topics/<slug>/sources.jsonl`,
-`TOPIC_DIR=topics/<slug>`, and
+`TOPIC_DIR=topics/<slug>`, `VOICE_EXEMPLAR=<resolved path>`, and
 `LINT=python3 tools/lint.py RUN/<label>.md --facts CD/facts.jsonl --topic-dir topics/<slug> --base-dir CD --words 1200,1800`.
 Record each writer's wall-clock duration from the task results.
+
+Before accepting any excerpt for measurement or claim checking, inspect that writer's tool
+transcript for a successful read covering the entire resolved `VOICE_EXEMPLAR` before
+`BRIEF` or drafting. A self-report is not evidence. If missing, return to the same writer
+to read it and revise the excerpt's style, then verify the recorded read.
+Briefly compare each opening and mechanism-heavy section with the exemplar for pacing,
+connected prose, and explanatory depth. Return concrete style problems to the same writer
+for correction without changing facts or citations, and compare the revised passages
+before proceeding. Keep labels blind; do not rank or recommend candidates at this gate.
+Lint and claim checking do not establish voice.
 
 ### 4. Measure, in parallel
 
