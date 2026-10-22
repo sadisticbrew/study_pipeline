@@ -1,0 +1,20 @@
+platform: CHAR_BIT=8 sizeof(int32_t)=4; A=[[0,1,2],[3,4,5]]; capacity=24 bytes
+A: origin=0 shape=[2, 3] strides=[12, 4]
+T: origin=0 shape=[3, 2] strides=[4, 12]
+S: origin=4 shape=[2, 2] strides=[12, 4]
+R: origin=8 shape=[2, 3] strides=[12, -4]
+reshape: origin=0 shape=[3, 2] strides=[8, 4]
+bias: origin=0 shape=[2, 3] strides=[0, 4] readonly
+A[1,2]: offset=20 value=5; T[2,1]: offset=20 value=5
+T logical order: offsets=[0, 12, 4, 16, 8, 20]; values=[0, 3, 1, 4, 2, 5]
+S logical order: offsets=[4, 8, 16, 20]; values=[1, 2, 4, 5]
+R logical order: offsets=[8, 4, 0, 20, 16, 12]; values=[2, 1, 0, 5, 4, 3]
+copy(T) values=[0, 3, 1, 4, 2, 5]; reshape(A) values=[0, 1, 2, 3, 4, 5]
+write T[2,1]=500: T=500 A[1,2]=500 copy(T)[2,1]=5; restored A[1,2]=5
+bias[0,2]/bias[1,2]: offsets=8/8; A+b values=[10, 21, 32, 13, 24, 35] (separate array)
+row bias (2,1): strides=[4, 0]; values=[10, 11, 12, 23, 24, 25]; bias (2,) rejected
+step-two view -> (3,1): offsets=[0, 8, 16] values=[0, 2, 4]; narrow reshape API rejects step input
+rejected: index=-1/extent/INT64_MAX; capacity=23; reverse origin=0; readonly write; INT64_MIN/MAX strides
+domain: rank=1..3 extent=1..256 capacity=4..65536 origin=0..65536 |stride|<=65536; empty/scalar unsupported
+singleton reshape values=[0, 1, 2, 3, 4, 5]; capacity=65536 last offset=65532 value=42
+independent comparisons: descriptors=22 offsets=604 values=604 alias_events=1 rejections=37

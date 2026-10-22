@@ -1,0 +1,18 @@
+CPU: Intel(R) Core(TM) Ultra 5 225H; threads=1
+OS: Linux-7.2.9-2-cachyos-x86_64-with-glibc2.44; Python 3.14.8; gcc (GCC) 16.2.1 20260810
+flags: -std=c11 -O2 -Wall -Wextra -Werror -fno-lto -fno-loop-interchange -fno-tree-loop-vectorize -fno-tree-slp-vectorize -fno-unroll-loops
+shape=2048x2048; buffer=16777216 bytes (16 MiB); loads=additions=4194304/visit; logical read bytes=16777216/visit
+checksums before timing: columns_inner=2113880166 rows_inner=2113880166 analytic=2113880166
+A(2x3) offsets: columns_inner=[0, 4, 8, 12, 16, 20]; rows_inner=[0, 12, 4, 16, 8, 20]
+CLOCK_MONOTONIC; warmup=2/order; trials=9/order; first order alternates; one full visit/sample
+timer pair overhead ns: median=57 min=54 max=12323; not subtracted
+columns_inner raw ms: 5.224,4.463,3.774,3.207,3.185,2.861,3.055,2.974,3.447
+columns_inner median=3.207 ms MAD=0.240 ms min=2.861 max=5.224
+rows_inner raw ms: 50.613,38.971,41.011,35.770,30.259,28.382,27.113,29.999,26.875
+rows_inner median=30.259 ms MAD=3.384 ms min=26.875 max=50.613
+timed results consumed/checked=18; same allocation and integer workload; setup/checks/printing outside intervals
+order control: separate compilation/no LTO; interchange/vectorization/unrolling off for both; out/kernels.s retained
+cache: repeated same allocation, no flush; not a cold-cache experiment; scheduling/frequency not controlled
+scope: scalar CPU loop-order timings, not universal speed, DRAM traffic, or GPU throughput
+input sha256 (canonical little-endian int32): 629d9d3b87b13dd7c0f40b226d17de14a1151a2d872d52bea729dfcef402ace6
+source-set sha256: 58575a84674f7eb7102d569496aa2258338e4825034948131056a6897d960e35; per-file hashes/raw ns/metadata: out/measurements.json

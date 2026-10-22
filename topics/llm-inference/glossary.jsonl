@@ -1,0 +1,24 @@
+{"term": "byte address", "def": "The position of a byte in the program's addressable storage.", "chapter": 1}
+{"term": "element size", "def": "The number of bytes occupied by one stored element.", "chapter": 1}
+{"term": "byte offset", "def": "A distance in bytes from a stated starting point.", "chapter": 1}
+{"term": "pointer", "def": "A typed value that can refer to an object, a function or just past an array, or be null.", "chapter": 1}
+{"term": "buffer", "def": "A region of storage that an array interpretation reads and writes.", "chapter": 1}
+{"term": "axis", "def": "One independently indexed direction of an array.", "chapter": 1}
+{"term": "shape", "def": "The ordered list of element counts along the axes of an array.", "chapter": 1}
+{"term": "rank", "def": "The number of axes an array has.", "chapter": 1}
+{"term": "stride", "def": "The signed change in byte offset caused by increasing one axis index by one.", "chapter": 1}
+{"term": "origin", "def": "The byte offset reached when every index is zero.", "chapter": 1}
+{"term": "metadata", "def": "Descriptions of how to interpret stored bytes, as opposed to the values themselves.", "chapter": 1}
+{"term": "dtype", "def": "The type and size of each stored element, such as a four-byte signed integer.", "chapter": 1}
+{"term": "tensor", "def": "An array with an ordered set of axes whose coordinates select stored elements.", "chapter": 1}
+{"term": "row-major order", "def": "A traversal in which the last axis index changes fastest and earlier axes change more slowly.", "chapter": 1}
+{"term": "contiguous", "def": "Laying out an array's logical elements in consecutive element-sized positions, with no gaps, in a stated traversal order.", "chapter": 1}
+{"term": "view", "def": "An array interpretation that shares another object's storage instead of owning a copy.", "chapter": 1}
+{"term": "aliasing", "def": "Two or more descriptions that reach the same stored bytes, so a write through one is visible through the other.", "chapter": 1}
+{"term": "slice", "def": "A selection of positions along an axis using a starting index, a stopping point and a step.", "chapter": 1}
+{"term": "reshape", "def": "A change of shape that preserves the element sequence in a stated traversal order.", "chapter": 1}
+{"term": "materialization", "def": "Creating independently stored elements by reading a view in a stated traversal order.", "chapter": 1}
+{"term": "broadcasting", "def": "Matching array shapes for an elementwise operation by reusing input elements instead of copying them.", "chapter": 1}
+{"term": "checksum", "def": "A summary computed from visited values, used to check that a traversal read the expected data.", "chapter": 1}
+{"term": "locality", "def": "An access pattern in which nearby storage positions tend to be used close together in time.", "chapter": 1}
+{"term": "median absolute deviation", "def": "The median of the absolute distances between individual samples and their median.", "chapter": 1}

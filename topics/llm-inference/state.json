@@ -1,0 +1,601 @@
+{
+  "slug": "llm-inference",
+  "title": "High-Performance LLM Inference and ML Systems",
+  "created": "2026-10-22",
+  "goal": "Develop implementation-grounded expertise in LLM inference and ML serving, starting from the learner's existing systems programming, linear algebra, numerical precision, and basic calculus rather than re-teaching them. By the end, the learner can trace a decoder Transformer from token bytes to sampled output, account for its memory traffic and numerical error, implement and validate its central CPU mechanisms, and explain the constraints behind GPU kernels and production serving systems. They can reason quantitatively about rooflines, attention and KV storage, paging, batching, prefix reuse, quantization, speculative decoding, compiler lowering and fusion, and distributed execution, using original papers, versioned documentation, and relevant source code to distinguish historical designs, present implementations, limitations, and alternatives. They can design reproducible correctness checks and benchmarks on a CPU-only laptop while explicitly separating local CPU observations, abstract simulations, analytic models, and hardware measurements reported by others.",
+  "lab": {
+    "runner": "local",
+    "toolchains": [
+      "gcc",
+      "python3",
+      "go"
+    ],
+    "notes": "NON-OPTIONAL: every generated chapter must contain at least one meaningful local implementation, profiling experiment, or benchmark that the learner can independently run and verify on a CPU-only laptop. Never choose runner none, omit the lab, or write 'no lab'. The fourth core idea of every chapter gives its required lab anchor; carry it into the chapter brief and run it through tools/lab.py. Use C compiled by gcc for memory layouts and kernels, Python 3 for readable independent reference calculations and harnesses, and Go for request scheduling and distributed-process experiments. Prefer standard libraries, bounded toy models, deterministic fixtures, and no required GPU, proprietary weights, paid API, CUDA toolchain, host root, or network at run time. Any optional model/tokenizer data or dependency must be versioned and prepared before the offline run; give CPU-friendly sizes, memory bounds, exact commands, seeds, build flags, and input hashes. Validate each implementation against an independently expressed reference or analytic result, not itself: use exact comparisons for integer/layout/allocator invariants, tolerance-based elementwise and aggregate comparisons for floating point, adversarial cases, and distributions rather than identical random sequences for probabilistic equivalence. Numerical work must report absolute and relative error with zero handling, meaningful tolerance rationale, and relevant NaN, infinity, subnormal, overflow, rounding, cancellation, or clipping behavior. Use a straightforward high-precision reference where practical, and distinguish algorithmic approximation from floating-point roundoff and model-quality loss. Benchmark only after correctness: record CPU/OS, compiler/interpreter versions, flags and thread counts, data shapes, warmup, repeated trials, timer overhead, work and bytes counted, cold versus warm cache/prefix state, and dispersion such as median and percentiles; keep allocation, setup, reference checks, and printing outside kernel timings unless explicitly measuring them, consume outputs to prevent dead-code elimination, and compare identical workloads. Serving experiments must state arrival trace, prompt/output lengths, offered load, throughput and latency denominators, and scheduler policy. Preserve raw measurements and reproducible commands in lab output; never pre-write timings, speedups, or benchmark conclusions. GPU-focused chapters must include runnable CPU benchmarks or simulators that expose the actual memory-tiling, cache-locality, or warp-scheduling mechanism alongside any optional unexecuted device listing. Label CPU timing, simulator event counts, analytical estimates, and cited GPU hardware measurements separately. A warp simulator is not a GPU timing model; CPU tiling results do not establish GPU speedups, and simulated GPU throughput must never be presented as measured hardware behavior. GPU device listings are supplementary only and must never replace the required local lab. Teach production mechanisms using the original paper plus version-pinned documentation and relevant source-code paths where available, with historical motivation, assumptions, limitations, and at least one relevant alternative. Source-library discovery is only orientation; chapter research must verify exact versions, claims, and code locations before using them. All chapters have 2500-3500 words of prose, excluding code and answers; avoid turning four bounded core ideas into a survey or importing untaught graph, probability, C, threading, or hardware knowledge. No chapter on training, backpropagation, elementary linear algebra, or elementary calculus is needed. Doctor at topic creation confirmed that the local bubblewrap sandbox works and all requested toolchains are available: gcc 16.2.1, Python 3.14.8, and Go 1.27.1. No missing toolchain or installation is required."
+  },
+  "parts": [
+    {
+      "title": "Bytes, bits, and dependencies",
+      "chapters": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "title": "A decoder you can execute",
+      "chapters": [
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "title": "Hardware costs and attention kernels",
+      "chapters": [
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    {
+      "title": "Stateful inference and request scheduling",
+      "chapters": [
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "title": "Compression and less decoding work",
+      "chapters": [
+        17,
+        18,
+        19,
+        20
+      ]
+    },
+    {
+      "title": "Compilation and distributed serving",
+      "chapters": [
+        21,
+        22,
+        23,
+        24
+      ]
+    }
+  ],
+  "chapters": [
+    {
+      "n": 1,
+      "slug": "tensor-memory",
+      "title": "Tensors are bytes with shapes and strides",
+      "part": 0,
+      "core_ideas": [
+        "Begin with the bytes of a matrix in a C array, teaching byte addresses, element sizes, pointer indexing, and bounds as needed rather than assuming solid C internals.",
+        "Derive multidimensional offset calculations from shape, strides, and an origin; explain contiguous row-major storage, transposed views, reshapes, slicing, and when a copy is necessary.",
+        "Introduce tensor axes and broadcasting as indexing rules, distinguish logical shape from physical layout, and connect sequential versus strided traversal to locality without assuming a cache model yet.",
+        "Required local lab: implement a bounded strided tensor view in C and an independent Python indexing reference; check offsets, transpose/slice/broadcast results, aliasing and invalid bounds, then compare checksum-preserving contiguous and strided traversal without claiming a universal speedup."
+      ],
+      "prereqs": [
+        "Variables, loops, arrays, and functions in C or Python; a Linux shell.",
+        "Vectors, matrices, and matrix multiplication are already known. Tensor storage, C pointer/address details, and broadcasting are taught here; no graph or GPU knowledge is assumed."
+      ],
+      "words": [
+        3000,
+        4500
+      ],
+      "status": "done",
+      "quiz": null
+    },
+    {
+      "n": 2,
+      "slug": "floating-point-bits",
+      "title": "Reading FP32, FP16, and BF16 bit by bit",
+      "part": 0,
+      "core_ideas": [
+        "Construct binary place values and the IEEE 754 sign, biased exponent, and fraction fields from first principles; derive normal and subnormal values and signed zero rather than assuming bit-level floating-point knowledge.",
+        "Compare FP32, IEEE binary16/FP16, and BF16 layouts, precision and exponent range, teaching infinities, NaNs, and representation limits with explicit bit patterns.",
+        "Trace conversion and round-to-nearest ties-to-even, overflow and underflow, and accumulation error; separate stored precision from arithmetic/accumulator behavior and do not assume all BF16 implementations treat subnormals identically.",
+        "Required local lab: write a Python representation inspector and FP16/BF16 conversion checks against independently decoded exact binary-rational values and Python struct where supported; exercise halfway cases, boundary exponents, signed zero, NaNs and infinities, and quantify round-trip and reduction error."
+      ],
+      "prereqs": [
+        "Byte-addressed arrays and element sizes from chapter 1; familiar numerical precision and basic arithmetic.",
+        "Binary fractional notation, exponent bias, IEEE fields, subnormals, and rounding rules are taught here; no bitwise idioms are assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 3,
+      "slug": "bit-packing",
+      "title": "Masks, shifts, and packed four-bit values",
+      "part": 0,
+      "core_ideas": [
+        "Build AND, OR, XOR, NOT, masks, and shifts from bit-by-bit truth tables, using unsigned fixed-width C integers and explicit diagrams of changed bits.",
+        "Trace field extraction, insertion, byte order, and sign extension; teach integer promotions, shift-width restrictions, and how to avoid undefined or implementation-dependent signed operations.",
+        "Represent signed INT8 and INT4 values, pack two nibbles per byte, and account for alignment and metadata overhead; introduce encoding and clipping, reserving quantization scale selection for chapter 17.",
+        "Required local lab: implement C nibble packing and unpacking with a simple Python integer-list oracle; exhaust all signed four-bit values and byte patterns, test odd lengths and boundaries, and measure packing/unpacking costs separately from any claim about low-bit matrix-multiply speed."
+      ],
+      "prereqs": [
+        "Memory layout and byte sizes from chapter 1, and representation boundaries from chapter 2.",
+        "Two's complement is familiar, but masks, shifts, sign extension, byte order, and safe C bit manipulation are not assumed and are taught here."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 4,
+      "slug": "computation-dags",
+      "title": "A computation DAG, from arrows to execution",
+      "part": 0,
+      "core_ideas": [
+        "Teach graph nodes, directed edges, paths, dependencies, and cycles using a tiny array expression; explain what acyclic means before introducing a computation DAG.",
+        "Build a ready-work queue and topological execution by counting unfinished inputs, tracing each state change and cycle rejection rather than assuming graph algorithms.",
+        "Attach shape, dtype, operation and tensor-lifetime information to values; distinguish a data-dependency graph from source-code order and avoid introducing autodiff or compiler jargon prematurely.",
+        "Required local lab: implement a small Python DAG executor for shape-checked array operators and compare its results with a directly written expression; include fan-out, independent branches, incompatible shapes and a dependency cycle, and emit a verifiable execution/liveness trace."
+      ],
+      "prereqs": [
+        "Tensor shapes, indexing, and dtypes from chapters 1-3; Python lists, dictionaries, and loops.",
+        "No graph theory is assumed. Nodes, edges, paths, cycles, DAGs, and topological execution are taught here; no training or differentiation is needed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 5,
+      "slug": "tokenization-embeddings",
+      "title": "From text bytes to token embeddings",
+      "part": 1,
+      "core_ideas": [
+        "Explain UTF-8 bytes, vocabulary IDs, token boundaries and special tokens; distinguish tokenization from character splitting and why exact tokenizer configuration belongs to the model contract.",
+        "Trace byte-level BPE merge ranks on a small example, including deterministic tie-breaking and decode round trips; explain where pre-tokenization and alternative tokenizers change behavior without implementing every family.",
+        "Treat an embedding as an indexed row lookup into a matrix, connect token IDs to tensor shapes, and distinguish learned table contents from runtime lookup mechanics.",
+        "Required local lab: implement a tiny byte-level BPE tokenizer and embedding lookup in Python with fixed vocabulary, merge ranks and vectors; compare exact IDs and outputs against independently prepared reference fixtures, test whitespace/UTF-8/special-token boundaries, and benchmark tokenization separately from lookup."
+      ],
+      "prereqs": [
+        "Tensor indexing from chapter 1 and basic dependency graphs from chapter 4; strings and byte arrays in Python.",
+        "No NLP, UTF-8 internals, tokenization, embeddings, or neural-network training knowledge is assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 6,
+      "slug": "forward-pass-norms",
+      "title": "The minimum neural-network forward pass",
+      "part": 1,
+      "core_ideas": [
+        "Construct an affine projection and a feed-forward MLP from familiar matrix multiplication, biases and elementwise nonlinearities; explain inference as applying fixed parameters, not a training tutorial.",
+        "Derive the actual inference reductions for LayerNorm and RMSNorm, including their axes, epsilon and accumulation precision, and show why normalization is not simply scaling the entire tensor once.",
+        "Trace residual addition, pre-normalized block wiring, and a gated/SwiGLU feed-forward path through a concrete DAG with explicit shapes.",
+        "Required local lab: implement a tiny fixed-weight residual MLP with LayerNorm/RMSNorm and a gated variant in Python or C; compare all intermediate arrays against independent high-precision reference calculations, test constant/large/small inputs, and report reduction and output error."
+      ],
+      "prereqs": [
+        "Matrix multiplication, tensor shapes and layouts, floating-point representations, computation DAGs, and embeddings from chapters 1-5.",
+        "Basic arithmetic and familiar basic calculus suffice. Means and reductions are derived with the normalization formulas; neural layers, nonlinearities and residual wiring are taught here. Backpropagation is out of scope."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 7,
+      "slug": "attention-rope",
+      "title": "Causal attention, multiple heads, and RoPE",
+      "part": 1,
+      "core_ideas": [
+        "Derive query/key/value projections, scaled dot products, numerically stable softmax and causal masking on a tiny sequence, explaining normalized nonnegative weights before relying on them.",
+        "Trace head splitting and recombination and contrast multi-head, multi-query and grouped-query attention through concrete tensor shapes and shared-key/value rules.",
+        "Teach positional information through two-coordinate rotations, introducing the needed sine/cosine rotation formula explicitly; derive RoPE's position-dependent pair rotations and relative-position dot-product behavior without assuming complex numbers.",
+        "Required local lab: implement scalar-reference causal attention, multi-head/GQA layouts and RoPE in Python; check intermediate scores and outputs, future-token isolation and rotation/dot-product identities, and test numerical error under extreme logits."
+      ],
+      "prereqs": [
+        "Token embeddings, affine projections, normalization, residual connections and numerical reductions from chapters 1-6; familiar matrix multiplication.",
+        "Attention, softmax, masking, head layouts, positional encoding and coordinate rotations are taught here. No probability theory, trigonometric identities, or complex-number background is assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 8,
+      "slug": "autoregressive-decoder",
+      "title": "An autoregressive decoder: prefill, decode, and sampling",
+      "part": 1,
+      "core_ideas": [
+        "Wire embeddings, pre-normalized attention/MLP blocks, final normalization and vocabulary projection into a minimal decoder-only Transformer with fixed toy parameters and explicit shapes.",
+        "Trace prompt prefill and one-token-at-a-time autoregressive decoding, stopping conditions and context limits, using full-prefix recomputation as the deliberately unoptimized reference.",
+        "Teach finite probability distributions, cumulative draws and conditional next-token probabilities before temperature, greedy selection, top-k and top-p sampling; distinguish logits, probabilities and sampled token IDs.",
+        "Required local lab: run a small CPU-only Python decoder on deterministic fixtures, compare each block and next-token logits with an independently expressed reference, and verify sampling normalization, boundary cases and empirical frequencies with fixed seeds and stated statistical tolerances."
+      ],
+      "prereqs": [
+        "Tokenization and embeddings from chapter 5, forward blocks and normalization from chapter 6, and causal attention/RoPE from chapter 7.",
+        "No probability or sampling background is assumed. Discrete distributions and cumulative sampling are taught here; no trained large model or GPU is required."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 9,
+      "slug": "measurement-roofline",
+      "title": "Measure first: arithmetic intensity and rooflines",
+      "part": 2,
+      "core_ideas": [
+        "Teach CPU cache lines, working sets, bandwidth and compute limits from actual tensor accesses, separating algorithmic byte counts from traffic at a named memory level.",
+        "Derive FLOP counts, arithmetic intensity and the roofline bound with explicit units, assumptions and attainable local bandwidth/compute baselines; contrast prefill matrix-matrix and decode matrix-vector work.",
+        "Establish reproducible benchmarking: monotonic timers, warmup, repeated trials and dispersion, compiler optimization, consumed results, thread control, cache state and honest limits of counters or inferred bottlenecks.",
+        "Required local lab: benchmark C streaming kernels, matrix-vector and small matrix-matrix kernels using a Python harness; verify outputs first, record raw trials and machine/build metadata, compute operational-intensity estimates, and compare measured CPU behavior with bounds without treating a bound as a measured result."
+      ],
+      "prereqs": [
+        "Tensor layouts and representation sizes from chapters 1-3, the executable decoder and prefill/decode distinction from chapters 6-8, and big-O from the profile.",
+        "CPU cache-line behavior, bandwidth measurement, FLOP accounting and roofline reasoning are taught here; no hardware-counter access or GPU is assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 10,
+      "slug": "gpu-execution",
+      "title": "GPU execution: SIMT warps and the memory hierarchy",
+      "part": 2,
+      "core_ideas": [
+        "Build the mapping from a kernel's logical indices to threads, warps, thread blocks and streaming multiprocessors; explain SIMT issue, active-lane masks and divergent control flow on an explicit trace.",
+        "Follow data through registers, on-chip SRAM/shared memory, caches and off-chip HBM, explaining coalesced transactions and shared-memory banks at the mechanism level rather than equating CPU and GPU caches.",
+        "Explain barriers, resource-limited residency/occupancy and latency hiding with a bounded warp-ready scheduler; teach the required synchronization and race examples instead of assuming GPU programming experience.",
+        "Required local lab: implement a deterministic CPU warp/memory-transaction simulator for contiguous, strided and divergent access plus barrier traces; validate masks, transactions and dependency ordering against hand-derived fixtures. Report event counts only, not predicted GPU throughput; any CUDA-like listing stays explicitly unexecuted."
+      ],
+      "prereqs": [
+        "Array addressing and bit masks from chapters 1-3, dependency readiness from chapter 4, and cache/bandwidth/roofline ideas from chapter 9.",
+        "No GPU execution, threading, memory-ordering, synchronization, or warp-scheduling knowledge is assumed. The limited barrier and data-race concepts used here are taught explicitly."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 11,
+      "slug": "memory-tiling",
+      "title": "Tiling matrix multiplication across memory levels",
+      "part": 2,
+      "core_ideas": [
+        "Derive blocking from redundant matrix loads and finite fast-memory capacity, tracing which elements a tile reuses and computing traffic at each named memory boundary.",
+        "Map a tiled multiply to cooperative GPU loading, shared SRAM, barriers and register accumulators; account for edge tiles, coalescing and bank conflicts without assuming matrix hardware details.",
+        "Introduce tensor/matrix instructions as architecture-specific tile operations, and explain double buffering as an explicit producer/consumer dependency schedule with resource and precision tradeoffs.",
+        "Required local lab: implement naive and blocked C matrix multiplication, validate against a high-precision Python reference, and benchmark tile-size/cache-locality effects on the actual CPU; extend the chapter 10 simulator to count GPU-style cooperative loads and reuse. Keep CPU timings, simulator traffic and optional unexecuted device kernels visibly separate."
+      ],
+      "prereqs": [
+        "Matrix multiplication is known; tensor strides from chapter 1, measured rooflines from chapter 9, and SIMT/shared-memory/barrier mechanisms from chapter 10.",
+        "Blocking, register tiling, cooperative loads, bank conflicts and double-buffer schedules are taught here; no actual GPU or device compiler is required."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 12,
+      "slug": "flashattention",
+      "title": "FlashAttention: exact attention without the big intermediate",
+      "part": 2,
+      "core_ideas": [
+        "Identify the attention-score/probability matrices as memory-traffic and working-set problems, distinguishing an exact attention algorithm from approximate attention and from a particular GPU kernel.",
+        "Derive numerically stable online softmax with running maximum, normalizer and weighted-value accumulator; trace how an earlier partial result is rescaled when the maximum changes.",
+        "Apply the recurrence to tiled causal attention, masks and uneven tiles; explain the original FlashAttention IO argument and the work-partitioning motivation of successors while keeping architecture-dependent performance claims sourced.",
+        "Required local lab: implement materialized and blockwise online attention in C/Python, compare both to the chapter 7 reference across tile sizes, masks and extreme logits, and benchmark actual CPU workspace/time while separately counting modeled HBM/SRAM traffic. Never call local CPU speed or a traffic count a measured FlashAttention GPU speedup."
+      ],
+      "prereqs": [
+        "Causal attention and stable softmax from chapter 7, numerical error from chapter 2, rooflines from chapter 9, and GPU hierarchy/tiling from chapters 10-11.",
+        "Online reductions and the rescaling recurrence are taught here; no prior FlashAttention implementation or GPU is assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 13,
+      "slug": "kv-cache",
+      "title": "KV caching and the cost of a growing context",
+      "part": 3,
+      "core_ideas": [
+        "Derive why past causal keys and values can be reused, trace incremental positions and RoPE handling, and distinguish cached KV from recomputed queries and layer activations.",
+        "Implement correct prompt-prefill and incremental-decode state, including sequence length, mask, position, reset and request-isolation invariants.",
+        "Compute KV capacity and read traffic from layers, tokens, head count, head dimension and dtype; contrast MHA/MQA/GQA and explain context limits, sliding windows and cache-precision tradeoffs as different model/serving contracts.",
+        "Required local lab: extend the chapter 8 toy decoder with a contiguous KV cache, compare every decode-step logit against full-prefix recomputation under both MHA and GQA, test reset/length boundaries, and measure real CPU time and memory growth by context length with reproducible inputs."
+      ],
+      "prereqs": [
+        "Attention, GQA and RoPE from chapter 7, prefill/decode and the baseline decoder from chapter 8, and traffic/performance accounting from chapter 9.",
+        "Stateful KV reuse, positional bookkeeping and context-capacity formulas are taught here; paging and request scheduling are not yet assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 14,
+      "slug": "pagedattention",
+      "title": "PagedAttention: virtual memory for KV blocks",
+      "part": 3,
+      "core_ideas": [
+        "Rebuild logical-to-physical address translation with small fixed-size KV blocks and a per-sequence block table, explicitly distinguishing this software indirection from CPU MMU page tables.",
+        "Trace block allocation, append, free, reference counts and copy-on-write for shared prefixes, including partially filled tail blocks and isolation invariants.",
+        "Explain internal/external fragmentation and block-size tradeoffs, then follow the original PagedAttention design into version-pinned vLLM block-management and attention-kernel interfaces, contrasting contiguous and alternative cache layouts.",
+        "Required local lab: implement a Python/C KV block allocator and paged-attention gather against the chapter 13 contiguous reference; exercise interleaved growth/free, shared-prefix copy-on-write and allocation exhaustion, and measure actual local allocation overhead/fragmentation without claiming GPU kernel performance."
+      ],
+      "prereqs": [
+        "Addresses, strides and aliasing from chapter 1; causal attention and KV state/capacity from chapters 7 and 13.",
+        "OS familiarity from the profile may motivate the analogy, but page translation, fragmentation, reference counting and copy-on-write rules needed for this allocator are taught here. Concurrent mutation is not assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 15,
+      "slug": "continuous-batching",
+      "title": "Continuous batching, chunked prefill, and latency",
+      "part": 3,
+      "core_ideas": [
+        "Trace request arrival, admission, prefill, decode and completion through a single-owner scheduler, contrasting static batches with iteration-level continuous batching and explaining padding versus ragged work.",
+        "Teach discrete event time, queues, time-to-first-token, inter-token latency, end-to-end latency and throughput, separating offered load from achieved throughput and avoiding unintroduced queueing-theory formulas.",
+        "Build token/KV-budget admission and chunked-prefill policies, explaining head-of-line blocking, fairness and prefill/decode interference through Orca and documented serving implementations and alternatives.",
+        "Required local lab: write a deterministic Go event scheduler plus a bounded real CPU replay using the toy decoder; compare static and continuous/chunked policies on the same arrival trace, check request outputs and KV budgets, and report simulated scheduling events separately from measured CPU latency/throughput distributions."
+      ],
+      "prereqs": [
+        "Prefill/decode and sampling from chapter 8, reproducible timing from chapter 9, and KV allocation from chapters 13-14; basic Go collections/functions.",
+        "Queues, discrete-event simulation, serving latency metrics and admission policies are taught here. Use a single owner or sequential simulation, so Go races or queueing theory are not assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 16,
+      "slug": "radix-prefix-cache",
+      "title": "Radix prefix trees and reusable prompt state",
+      "part": 3,
+      "core_ideas": [
+        "Teach rooted trees, parent/child paths and tries from concrete token sequences, then derive radix edge compression, longest-prefix matching, edge splitting and insertion step by step.",
+        "Attach reusable KV blocks to token-prefix paths; distinguish exact token-prefix equality from similar text, and include model/configuration/adapter/position identity and request isolation in the cache key contract.",
+        "Trace reference-aware eviction and shared-block lifetimes under a memory budget; explain SGLang RadixAttention's historical design and compare radix reuse with block-hash prefix caching, including cold/warm workload limitations.",
+        "Required local lab: implement a Python radix KV-prefix cache against a naive token-tuple prefix oracle; test split/merge boundaries, active-reference eviction and differing model keys, verify reused-prefill logits equal uncached logits, and benchmark controlled cold/warm and skewed traces with explicit hit-rate and timing denominators."
+      ],
+      "prereqs": [
+        "Token IDs from chapter 5, graph nodes/edges/paths from chapter 4, KV reuse and block reference counts from chapters 13-14, and workload/latency accounting from chapter 15.",
+        "Trees, tries, radix compression, longest-prefix search and eviction bookkeeping are taught here; no prior tree algorithms or concurrent data structures are assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 17,
+      "slug": "weight-quantization",
+      "title": "Weight quantization: INT8, INT4, and group-wise scales",
+      "part": 4,
+      "core_ideas": [
+        "Derive affine quantize/dequantize equations, symmetric/asymmetric ranges, zero points, rounding, clipping and representable endpoints using the bit layouts already learned.",
+        "Compare per-tensor, per-channel and group-wise scaling on weights; account for scale/zero-point metadata, group tails, packing layout and effective bits per weight rather than reporting only nominal INT4 size.",
+        "Trace weight-only dequantization and integer dot products with explicit accumulator width and rescaling, separating storage savings, numerical error, and whether the actual backend can exploit low-bit arithmetic.",
+        "Required local lab: implement packed INT4 and INT8 group-wise weight quantization plus a C reference matvec/dequantization path; compare with an independent Python quantizer and floating-point matvec on normal, outlier, constant and boundary groups, report error/size including metadata, and benchmark CPU packing/dequantization/compute separately with no assumed speedup."
+      ],
+      "prereqs": [
+        "FP layouts and rounding from chapter 2, signed nibble packing and safe shifts from chapter 3, tensor axes from chapter 1, and matrix-vector performance from chapter 9.",
+        "Quantization scales, zero points, calibration ranges and integer accumulation rules are taught here; no specialized low-bit CPU or GPU instructions are assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 18,
+      "slug": "activation-quantization",
+      "title": "Activation quantization, outliers, and W8A8",
+      "part": 4,
+      "core_ideas": [
+        "Distinguish weight-only from weight-and-activation quantization, static calibration from dynamic/token-wise scaling, and quantization boundaries around projections, normalization and residual paths.",
+        "Measure activation ranges and outlier channels on fixed examples; explain calibration representativeness, clipping/error tradeoffs and why one tensor's small average error can hide important token/channel failures.",
+        "Derive SmoothQuant-style equivalent channel rescaling and contrast it with LLM.int8-style outlier paths; trace integer accumulators, scale broadcasting and bias/output conversion without assuming all operators run in INT8.",
+        "Required local lab: quantize a tiny forward block with static/dynamic INT8 activation scales and a channel-rescaling variant, validate against the chapter 6/8 floating-point reference, and report per-layer/logit error on separate calibration and held-out fixtures, including outlier and distribution-shift cases; label local latency as CPU-path evidence only."
+      ],
+      "prereqs": [
+        "Forward projections, normalization and residual paths from chapter 6, decoder logits from chapter 8, and quantization/scale/accumulation mechanics from chapter 17.",
+        "Calibration datasets, held-out evaluation, activation outliers and channel equalization are taught here. No statistics or neural-network training theory beyond the earlier discrete sampling foundations is assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 19,
+      "slug": "calibrated-low-bit",
+      "title": "Calibrated low-bit weights: GPTQ, AWQ, and error budgets",
+      "part": 4,
+      "core_ideas": [
+        "Formulate layer-output reconstruction error on calibration activations, deriving the local quadratic error model and the needed Gram/Hessian meaning directly from matrix products and familiar basic calculus.",
+        "Trace a small GPTQ-style sequential weight quantization with error compensation, introducing any small-system solve and damping mechanics explicitly rather than assuming advanced numerical linear algebra.",
+        "Contrast AWQ's activation-aware equivalent channel scaling and search with second-order compensation and plain group-wise rounding; explain calibration dependence, group constraints and why lower reconstruction error is not a universal model-quality guarantee.",
+        "Required local lab: implement bounded small-matrix GPTQ-style compensation and AWQ-style scaling search in Python alongside chapter 17 group-wise rounding; validate quadratic identities and reconstruction outputs against direct independent calculations, evaluate separate calibration/held-out cases and tiny-decoder logits, and report size/error/cost without claiming full-model quality or GPU speed."
+      ],
+      "prereqs": [
+        "Known matrix multiplication and basic calculus; group-wise INT4/INT8 and output error from chapter 17; activation calibration and equivalent rescaling from chapter 18.",
+        "Quadratic error models, Gram matrices, the limited Hessian interpretation, damping and small linear solves needed for the examples are taught here. No optimization course, training/backpropagation or matrix-factorization background is assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 20,
+      "slug": "speculative-decoding",
+      "title": "Speculative decoding without changing the target distribution",
+      "part": 4,
+      "core_ideas": [
+        "Trace a draft proposal, parallel target verification and accepted-prefix commit with KV rollback, connecting block verification to prefill/decode rather than treating speculation as free tokens.",
+        "Derive acceptance min(1, p/q) and the normalized positive residual for rejection, teaching conditional acceptance reasoning on a finite vocabulary; contrast exact sampling with greedy matching and heuristic alternatives.",
+        "Build a cost model from draft/target cost, proposal length, acceptance and batching; explain when speculation loses, and place the original speculative-decoding papers and documented implementations in context.",
+        "Required local lab: implement rejection-corrected speculative sampling over a tiny independently specified target/draft and connect a bounded version to the toy decoder; verify exact finite-vocabulary probabilities analytically and empirical output distributions statistically, test zero probabilities/rejection/KV rollback, and measure real CPU costs separately from a hypothetical accelerator cost model."
+      ],
+      "prereqs": [
+        "Finite distributions, conditional next-token probabilities and sampling from chapter 8, KV commit/reset behavior from chapter 13, and batching/cost measurement from chapters 9 and 15.",
+        "Rejection sampling, residual distributions and speculative verification are taught here; no probability course, draft-model training or GPU is assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 21,
+      "slug": "graph-lowering",
+      "title": "ML compiler lowering: from tensor graphs to loops",
+      "part": 5,
+      "core_ideas": [
+        "Build a small typed tensor IR from the chapter 4 DAG, separating graph capture, constants, dynamic shapes and operation semantics from any particular model framework.",
+        "Trace successive lowering from a high-level projection/normalization graph to explicit loops, indices, layouts and buffer operations; explain legality checks, specialization and guards with concrete examples.",
+        "Relate the toy stages to documented MLIR/StableHLO and representative ML compiler code paths, distinguishing an IR contract from a compiler pass, a runtime and a generated kernel; discuss dynamic-shape and unsupported-operation alternatives.",
+        "Required local lab: implement a Python lowering pass that emits compilable C for a bounded tensor DAG and invoke gcc locally; compare generated results and shape/error behavior against the interpreter on multiple valid shapes and invalid guards, and record compilation versus execution cost separately."
+      ],
+      "prereqs": [
+        "Computation DAGs, shape/dtype propagation and execution from chapter 4; tensor indexing from chapter 1; forward operators from chapter 6; C loops and gcc from earlier labs.",
+        "No compiler course, formal IR notation, graph rewriting, SSA knowledge or code-generation experience is assumed. The limited IR and lowering concepts needed are taught here."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 22,
+      "slug": "operator-fusion",
+      "title": "Operator fusion, buffer lifetimes, and numerical legality",
+      "part": 5,
+      "core_ideas": [
+        "Derive producer-consumer fusion by eliminating materialized intermediate tensors, distinguishing elementwise fusion, reduction fusion and tiled attention from simply combining source functions.",
+        "Use liveness and alias information to plan buffers; explain legality constraints from side effects, shared consumers, reduction order, dtype conversions and quantization boundaries.",
+        "Reason about fusion profitability through bytes, launch/dispatch overhead and increased live state/register pressure; connect representative documented compiler fusion decisions to alternatives such as separate tuned kernels.",
+        "Required local lab: extend the chapter 21 C emitter with one meaningful projection/activation or normalization fusion and buffer plan; compare fused/unfused outputs against a high-precision reference including shared-consumer and rounding-sensitive cases, benchmark actual CPU time and memory traffic estimates, and do not infer GPU launch savings from CPU results."
+      ],
+      "prereqs": [
+        "DAG liveness from chapter 4, roofline/tiling costs from chapters 9-12, numerical precision and quantization boundaries from chapters 2 and 17-18, and explicit compiler lowering from chapter 21.",
+        "Fusion legality, alias/liveness-based buffer reuse and profitability tradeoffs are taught here; no advanced compiler analysis or GPU profiling tools are assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 23,
+      "slug": "distributed-parallelism",
+      "title": "Distributed inference: collectives and model partitioning",
+      "part": 5,
+      "core_ideas": [
+        "Teach process/rank, message ordering, send/receive, broadcast, gather and sum all-reduce from explicit array ownership and communication traces, including startup latency and transferred-byte accounting.",
+        "Derive row/column tensor-parallel projections and the resulting collectives, connecting partitioned attention/MLP shapes to a non-distributed reference and noting reduction-order error.",
+        "Contrast tensor, pipeline and replica/data parallelism, trace a small pipeline's dependencies and bubbles, and explain how per-token communication and interconnect limits change prefill versus decode scaling.",
+        "Required local lab: run several local Go worker processes communicating over Unix sockets with explicitly framed messages and a single-owner control loop; implement a small collective and partitioned projection/pipeline, validate against the single-process Python/C result, and benchmark measured local IPC separately from modeled cross-device or cross-host network costs."
+      ],
+      "prereqs": [
+        "Tensor layouts and matrix multiplication from chapters 1 and 6, DAG dependencies from chapter 4, prefill/decode from chapter 8, measurement from chapter 9, and basic Go programming.",
+        "Distributed ranks, collectives, socket message framing and pipeline schedules are taught here; Go data races, weak memory ordering, network protocols and collective algorithms are not assumed."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    },
+    {
+      "n": 24,
+      "slug": "distributed-serving",
+      "title": "Distributed serving and prefill/decode disaggregation",
+      "part": 5,
+      "core_ideas": [
+        "Trace replica routing and KV/prefix ownership across workers, connecting cache-aware placement, token budgets and request cancellation/completion to the scheduler and allocator invariants already built.",
+        "Derive prefill/decode disaggregation as a resource-interference tradeoff, accounting for KV handoff volume, transfer latency, placement, queueing and when colocated serving is preferable; use original DistServe/Splitwise-style designs and documented alternatives.",
+        "Build an end-to-end capacity and goodput argument under explicit TTFT/inter-token/end-to-end latency targets, distinguishing bottlenecks, offered load, model/quantization configuration and reproducibility from peak tokens-per-second claims.",
+        "Required local lab: assemble a bounded Go multi-process serving replay around the earlier CPU toy decoder, with a real KV-state handoff and colocated versus split prefill/decode policies; verify outputs/state ownership against single-process inference, measure actual local IPC/CPU latency and achieved goodput on the same traces, and clearly label any injected network delay or accelerator estimate as simulation rather than measured GPU service behavior."
+      ],
+      "prereqs": [
+        "KV ownership, paged blocks, batching and prefix reuse from chapters 13-16; numerical/quality tradeoffs from chapters 17-20; local multi-process communication and parallelism from chapter 23; benchmark methodology from chapter 9.",
+        "Service goodput, latency targets, routing/placement and disaggregated handoff protocols are taught here. No GPU cluster, external serving service, distributed-systems course or production deployment is required."
+      ],
+      "words": [
+        2500,
+        3500
+      ],
+      "status": "pending",
+      "quiz": null
+    }
+  ]
+}
